@@ -1,0 +1,57 @@
+# ============================
+# Work_Disk Git Ignore
+# ERGS Dynamics
+# ============================
+
+# Build outputs
+work_disk_app/work_disk
+*.o
+*.out
+
+# Databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/mcp.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Logs
+*.log
+
+# Backup files
+*.bak
+
+# Local backups
+backups/
+archive/
+
+# Milestone ZIP backups
+*.zip
+
+# VS Code local settings
+.vscode/
+
+# Backup source files
+*.bak
+# Local backup source files
+work_disk_app/backups/
+# Old documentation backups
+work_disk_docs/*_before_D15_update.md
+# Local backup source files
+work_disk_app/backup/
+
+# Old documentation backups
+work_disk_docs/*_before_D15_update.md
