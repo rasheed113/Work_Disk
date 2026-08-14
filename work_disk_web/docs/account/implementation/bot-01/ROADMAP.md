@@ -1,137 +1,83 @@
 # Work_Disk Web — Account — Bot 01 Roadmap
 
-## 1. Grand Shipyard Model
+## 1. Goal
 
-Work_Disk is developed as a grand shipyard.
+Build Account Bot 01 cleanly from the current Work_Disk Web architecture.
 
-The complete architecture is the ship design.
-
-Bots are independent construction units.
-
-Each Bot:
-
-1. receives a defined contract,
-2. implements only its assigned responsibility,
-3. produces deterministic behaviour,
-4. exposes explicit boundaries,
-5. verifies its invariants,
-6. records source traceability,
-7. hands a clean boundary to the next Bot.
-
-## 2. Development Order
+## 2. Order
 
 Architecture
-    ↓
+↓
+Blueprint
+↓
 Implementation Contract
-    ↓
-Bot Blueprint
-    ↓
-Data / Interface Contract
-    ↓
-Implementation
-    ↓
-Unit Tests
-    ↓
-Invariant Tests
-    ↓
-Integration Verification
-    ↓
-Bot Completion
-    ↓
-Next Bot
+↓
+Account model
+↓
+Repository boundary
+↓
+Service boundary
+↓
+Validators where required
+↓
+Unit tests
+↓
+Integration tests
+↓
+Verification
+↓
+Bot 01 completion
 
-No Bot begins implementation before its contract is sufficiently
-defined.
+## 3. Build Rules
 
-## 3. Account Bot 01
+- Implement only approved scope.
+- Do not import previous Work_Disk code.
+- Do not import previous Work_Disk architecture.
+- Do not invent missing architecture inside code.
+- Keep each implementation responsibility bounded.
+- Add tests with the implementation.
+- Keep documentation lightweight.
 
-Bot 01 is the first implementation unit of the Account domain.
+## 4. File Strategy
 
-Its exact responsibilities must be defined in BLUEPRINT.md before
-implementation begins.
+Use the existing Bot 01 structure:
 
-The Bot must not absorb unrelated responsibilities merely because
-they are technically convenient.
+src/account/bot-01/models/
+src/account/bot-01/repositories/
+src/account/bot-01/services/
+src/account/bot-01/utils/
+src/account/bot-01/validators/
 
-## 4. Security Architecture
+Tests:
 
-Bot 01 operates under the already sealed:
+tests/account/bot-01/unit/
+tests/account/bot-01/integration/
 
-- Step 1 — Identity Core
-- Step 2 — Credential & Session Security
-- Step 3 — Session Implementation Contract
-- Step 4 — Authorization & Access Control
-- Step 5 — Resource & Workspace Lifecycle
-- Step 6 — Data Integrity & Recovery Authority
-- Step 7 — Provenance, Audit & History
-- Step 8 — Secure Communication & Trust Boundary
+Create only files required by the implementation contract.
 
-## 5. Step 8 Security Laws
+## 5. Decision Gate
 
-The following are authoritative and sealed:
+Before implementing any requirement, confirm that it comes from the
+current architecture or the approved Bot 01 contract.
 
-- Law #37.1 — Audience Binding
-- Law #37.2 — Non-Resurrectable Consumption
-- Law #37.3 — Protocol Semantic Binding
-- Law #37.4 — Protocol Lifecycle
-- Law #37.5 — Causal Dependency
-- Law #37.6 — Concurrent Commit Revalidation
-- Law #37.7 — Verifiable Commit Selection
-- Law #37.8 — Receipt Uniqueness
-- Law #37.9 — Stale-View Prohibition
-- Law #37.10 — Lease Subordination
-- Law #37.11 — Silence Non-Authorization
-- Law #37.12 — Canonical Liveness Anchor
-- Law #37.13 — Subject-Bound Authority Proof & Non-Transplantability
-- Law #37.14 — Monotonic Delegation & Non-Amplifying Authority
+If it does not:
 
-## 6. Validation Pipeline
+STOP.
 
-The sealed pipeline consists of:
+Do not derive it from an old Work_Disk version.
 
-01. Identity
-02. Audience
-03. Protocol Contract
-04. Causal Binding
-05. Consumption / Replay
-06. Context Reconstruction
-07. Freshness / Epoch / Generation
-08. Lease / Continuity
-09. Delegation
-10. Commit-Time Revalidation
-11. Canonical Commit
-12. Transition Receipt
+## 6. Completion Gate
 
-## 7. Implementation Discipline
+Bot 01 may be marked complete only after:
 
-Gates 01–10 remain read-only validation boundaries.
+- implementation is complete;
+- required tests pass;
+- boundaries are respected;
+- no old architecture has been imported;
+- unresolved architectural decisions have not been hidden inside code.
 
-Gate 11 is the canonical state mutation boundary.
+## 7. Next Bot
 
-Gate 12 cryptographically seals the resulting canonical transition.
+Completion of Bot 01 does not automatically authorize the next Bot.
 
-No Bot may bypass these boundaries.
-
-## 8. Completion Requirements
-
-Bot 01 is complete only when:
-
-- its scope is implemented,
-- its interfaces are defined,
-- its state ownership is explicit,
-- its failure behaviour is explicit,
-- its invariants are testable,
-- mandatory tests pass,
-- source traceability is complete,
-- no architectural law is weakened,
-- no unauthorized authority is introduced.
-
-## 9. Handoff
-
-After Bot 01 is verified, its public boundary becomes an input to the
-next approved Bot contract.
-
-The next Bot must not be implemented merely because Bot 01 is finished.
-
-Its own authoritative contract must exist first.
-
+The next Bot receives its own scope and contract before implementation.

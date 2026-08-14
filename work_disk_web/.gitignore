@@ -1,0 +1,10 @@
+# Build artifacts
+build/
+
+# Temporary files
+*.o
+*.out
+
+# Editor / OS files
+*~
+.DS_Store
