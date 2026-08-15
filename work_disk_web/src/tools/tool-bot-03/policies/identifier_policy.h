@@ -1,0 +1,14 @@
+#pragma once
+
+#include "../types/identifier_type.h"
+
+#include <cstddef>
+
+namespace work_disk::tools::bot03 {
+
+class IdentifierPolicy {
+public:
+    static std::size_t length(IdentifierType type);
+};
+
+} // namespace work_disk::tools::bot03
