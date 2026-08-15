@@ -2,45 +2,35 @@
 
 #include <cassert>
 #include <iostream>
-#include <string>
 
 using namespace work_disk::tools::bot01;
 
+static void verify_generation(
+    IdentifierType type,
+    std::size_t expected_length
+) {
+    const auto result =
+        IdentifierGeneratorTool::generate(type);
+
+    assert(result.hasValue());
+    assert(result.error() == ToolBot01Error::None);
+    assert(result.value().size() == expected_length);
+
+    assert(
+        IdentifierValidatorTool::isValid(
+            type,
+            result.value()
+        )
+    );
+}
+
 int main() {
-    const std::string account =
-        IdentifierGeneratorTool::generate(IdentifierType::Account);
+    verify_generation(IdentifierType::Account, 9);
+    verify_generation(IdentifierType::Entry, 11);
+    verify_generation(IdentifierType::Fleet, 7);
 
-    const std::string entry =
-        IdentifierGeneratorTool::generate(IdentifierType::Entry);
-
-    const std::string fleet =
-        IdentifierGeneratorTool::generate(IdentifierType::Fleet);
-
-    assert(
-        IdentifierValidatorTool::isValid(
-            IdentifierType::Account,
-            account
-        )
-    );
-
-    assert(
-        IdentifierValidatorTool::isValid(
-            IdentifierType::Entry,
-            entry
-        )
-    );
-
-    assert(
-        IdentifierValidatorTool::isValid(
-            IdentifierType::Fleet,
-            fleet
-        )
-    );
-
-    std::cout << "ACCOUNT=" << account << '\n';
-    std::cout << "ENTRY=" << entry << '\n';
-    std::cout << "FLEET=" << fleet << '\n';
-    std::cout << "TOOL_BOT_01_PUBLIC_CONTRACT_TEST=PASS\n";
+    std::cout
+        << "TOOL_BOT_01_PUBLIC_CONTRACT_TEST=PASS\n";
 
     return 0;
 }

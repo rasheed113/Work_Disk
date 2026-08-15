@@ -1,9 +1,7 @@
 #include "identifier_generator_tool.h"
 
 #include <cassert>
-#include <cctype>
 #include <iostream>
-#include <string>
 
 using namespace work_disk::tools::bot01;
 
@@ -11,14 +9,12 @@ static void verify_identifier(
     IdentifierType type,
     std::size_t expected_length
 ) {
-    const std::string id =
+    const auto result =
         IdentifierGeneratorTool::generate(type);
 
-    assert(id.size() == expected_length);
-
-    for (const unsigned char character : id) {
-        assert(std::isalnum(character) != 0);
-    }
+    assert(result.hasValue());
+    assert(result.error() == ToolBot01Error::None);
+    assert(result.value().size() == expected_length);
 }
 
 int main() {
@@ -26,7 +22,8 @@ int main() {
     verify_identifier(IdentifierType::Entry, 11);
     verify_identifier(IdentifierType::Fleet, 7);
 
-    std::cout << "IDENTIFIER_GENERATOR_TOOL_TEST=PASS\n";
+    std::cout
+        << "IDENTIFIER_GENERATOR_TOOL_TEST=PASS\n";
 
     return 0;
 }

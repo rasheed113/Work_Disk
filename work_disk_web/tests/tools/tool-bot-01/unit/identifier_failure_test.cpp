@@ -32,16 +32,6 @@ int main() {
 
     assert(policy_length_threw);
 
-    bool policy_mode_threw = false;
-
-    try {
-        (void)IdentifierPolicy::generationMode(invalid_type);
-    } catch (const std::invalid_argument&) {
-        policy_mode_threw = true;
-    }
-
-    assert(policy_mode_threw);
-
     assert(
         !IdentifierValidator::isValid(
             invalid_type,

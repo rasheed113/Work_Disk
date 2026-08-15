@@ -18,21 +18,6 @@ int main() {
         IdentifierPolicy::length(IdentifierType::Fleet) == 7
     );
 
-    assert(
-        IdentifierPolicy::generationMode(IdentifierType::Account)
-        == GenerationMode::OnlineOnly
-    );
-
-    assert(
-        IdentifierPolicy::generationMode(IdentifierType::Entry)
-        == GenerationMode::Hybrid
-    );
-
-    assert(
-        IdentifierPolicy::generationMode(IdentifierType::Fleet)
-        == GenerationMode::Hybrid
-    );
-
     std::cout << "IDENTIFIER_POLICY_TEST=PASS\n";
 
     return 0;

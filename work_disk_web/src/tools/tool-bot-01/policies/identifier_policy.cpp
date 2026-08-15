@@ -19,19 +19,5 @@ std::size_t IdentifierPolicy::length(IdentifierType type) {
     throw std::invalid_argument("Unknown identifier type");
 }
 
-GenerationMode IdentifierPolicy::generationMode(IdentifierType type) {
-    switch (type) {
-        case IdentifierType::Account:
-            return GenerationMode::OnlineOnly;
-
-        case IdentifierType::Entry:
-            return GenerationMode::Hybrid;
-
-        case IdentifierType::Fleet:
-            return GenerationMode::Hybrid;
-    }
-
-    throw std::invalid_argument("Unknown identifier type");
-}
 
 } // namespace work_disk::tools::bot01

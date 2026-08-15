@@ -90,9 +90,13 @@ Calling value() on a failure throws std::logic_error.
 
 Current identifier types:
 
-- Account: length 9, OnlineOnly
-- Entry: length 11, Hybrid
-- Fleet: length 7, Hybrid
+- Account: length 9
+- Entry: length 11
+- Fleet: length 7
+
+Generation mode is not part of the public Result API contract. Authority,
+persistence, synchronisation, and uniqueness are determined outside
+TOOL-BOT-01.
 
 Identifier alphabet:
 
@@ -205,11 +209,12 @@ IDENTIFIER_SPACE=PASS
 RESULT_API_AUDIT=PASS
 FINAL_BASELINE=PASS
 
-## Next Phase
+## Integration Status
 
-The next architectural phase is to integrate IdentifierGenerationResult into the public identifier generation path.
+IdentifierGenerationResult is now integrated into the public identifier
+generation path.
 
-That integration must preserve all existing:
+The integration preserves:
 
 - error invariants
 - validation invariants
@@ -217,6 +222,8 @@ That integration must preserve all existing:
 - identifier length rules
 - identifier alphabet rules
 - public/internal boundary
+
+No separate generation-mode API is part of the current public contract.
 
 ## Preservation Status
 
