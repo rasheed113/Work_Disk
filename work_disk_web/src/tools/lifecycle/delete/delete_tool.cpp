@@ -18,8 +18,7 @@ DeleteResult DeleteTool::execute(
         );
     }
 
-    if (request.authority.authorityReference.empty() ||
-        request.authority.approvalEvidence.empty()) {
+    if (request.authority.authorityReference.empty()) {
         return DeleteResult::missingAuthority(
             request.requestId
         );

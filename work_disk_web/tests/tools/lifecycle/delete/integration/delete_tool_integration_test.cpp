@@ -33,14 +33,11 @@ static DeleteRequest make_authorised_request() {
     DeleteRequest request;
 
     request.requestId = "REQ-BOT04-INTEGRATION-001";
-    request.targetType = "FleetEntry";
-    request.targetId = "ENTRY-123456";
+    request.targetType = "SocialPost";
+    request.targetId = "POST-123456";
 
     request.authority.authorityReference =
         "OPAQUE-AUTHORITY-REFERENCE";
-
-    request.authority.approvalEvidence =
-        "OPAQUE-APPROVAL-EVIDENCE";
 
     return request;
 }
@@ -52,13 +49,9 @@ static void test_complete_authorised_deletion_boundary() {
     const auto request = make_authorised_request();
     const auto result = tool.execute(request);
 
-    // Authorised request reached the authoritative boundary.
     assert(boundary.called);
-
-    // Target validation occurred inside the authoritative boundary.
     assert(boundary.targetValidated);
 
-    // The request crossed the boundary unchanged.
     assert(
         boundary.receivedRequest.requestId ==
         request.requestId
@@ -77,11 +70,6 @@ static void test_complete_authorised_deletion_boundary() {
     assert(
         boundary.receivedRequest.authority.authorityReference ==
         request.authority.authorityReference
-    );
-
-    assert(
-        boundary.receivedRequest.authority.approvalEvidence ==
-        request.authority.approvalEvidence
     );
 
     // BOT-04 reports only the authoritative result.

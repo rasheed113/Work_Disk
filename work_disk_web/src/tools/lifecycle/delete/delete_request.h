@@ -6,7 +6,6 @@ namespace work_disk::tools::lifecycle::delete_tool {
 
 struct DeleteAuthority {
     std::string authorityReference;
-    std::string approvalEvidence;
 };
 
 struct DeleteRequest {

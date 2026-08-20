@@ -27,14 +27,11 @@ static DeleteRequest make_valid_request() {
     DeleteRequest request;
 
     request.requestId = "REQ-BOT04-BOUNDARY-001";
-    request.targetType = "FleetEntry";
-    request.targetId = "ENTRY-123456";
+    request.targetType = "SocialPost";
+    request.targetId = "POST-123456";
 
     request.authority.authorityReference =
         "OPAQUE-AUTHORITY-REFERENCE";
-
-    request.authority.approvalEvidence =
-        "OPAQUE-APPROVAL-EVIDENCE";
 
     return request;
 }
@@ -70,12 +67,6 @@ static void test_deleted_reaches_boundary() {
         boundary.receivedRequest.authority.authorityReference ==
         request.authority.authorityReference
     );
-
-    assert(
-        boundary.receivedRequest.authority.approvalEvidence ==
-        request.authority.approvalEvidence
-    );
-
 
     assert(result.outcome() == DeleteOutcome::Deleted);
     assert(result.error() == DeleteError::None);

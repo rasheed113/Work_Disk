@@ -2,7 +2,7 @@
 
 ## Purpose
 
-BOT-04 is the Work_Disk deletion execution tool.
+BOT-04 is the Work_Disk generic deletion execution tool.
 
 Its responsibility is strictly limited to executing an authorised deletion
 operation through the approved execution boundary.
@@ -21,7 +21,6 @@ BOT-04 receives a deletion request containing:
 - target type
 - target identifier
 - authoritative authorisation reference
-- approval evidence
 
 Authority and domain decisions remain outside BOT-04.
 
@@ -30,6 +29,7 @@ BOT-04 does not own:
 - account authority
 - identity authority
 - fleet authority
+- contractor approval
 - ownership decisions
 - permission decisions
 - archive behaviour
@@ -40,6 +40,11 @@ BOT-04 does not own:
 - UI behaviour
 - universal cleanup
 - unrelated domain operations
+
+Fleet warning/approval is intentionally separated into a future
+Fleet-specific logical board. That board may establish the required
+upstream authority and then invoke BOT-04. BOT-04 itself contains no
+Fleet approval workflow.
 
 ## Deletion Execution
 
@@ -83,6 +88,7 @@ BOT-04 must not:
 - convert execution failure into success
 - interpret presentation expiry as deletion
 - silently destroy protected historical or evidence data
+- implement Fleet approval semantics
 
 Undefined destructive behaviour remains a STOP condition.
 
@@ -108,6 +114,7 @@ BOT-04 verification includes:
 - execution boundary tests
 - execution failure mapping tests
 - complete integration boundary test
+- generic deletion without Fleet-specific approval fields
 
 The integration test verifies:
 
@@ -115,12 +122,10 @@ The integration test verifies:
 
 ## Status
 
-Architecture, implementation, unit verification, integration verification,
-commit, and repository push are complete.
+BOT-04 generic Delete Bot implementation and boundary refinement are
+complete on the feature branch. Fleet-specific warning/approval remains a
+separate future board and is deliberately not part of BOT-04.
 
-BOT-04 implementation commit:
+Original BOT-04 implementation commit:
 
 `3bda5f7` — `Implement BOT-04 delete lifecycle tool`
-
-README and PROFILE are documentation completion artifacts and do not expand
-the BOT-04 implementation boundary.

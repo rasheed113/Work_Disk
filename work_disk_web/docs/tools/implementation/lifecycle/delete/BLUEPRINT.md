@@ -18,7 +18,7 @@ The governing principle is:
 BOT-04 does not decide whether a resource should be deleted.
 
 BOT-04 is not an Archive Bot, Trash Manager, Restore Handler, Filter,
-Sort, or universal cleanup/orchestration component.
+Sort, universal cleanup/orchestration component, or domain approval engine.
 
 ## 2. Core Invariants
 
@@ -29,7 +29,8 @@ The following rules are non-negotiable:
 - BOT-04 does not perform ownership or permission decisions.
 - Callers cannot select arbitrary deletion semantics.
 - Callers cannot independently expand cascade scope.
-- Fleet and Contractor approval remain outside BOT-04.
+- Fleet warning/approval logic remains outside BOT-04 in a separate
+  Fleet-specific architectural boundary.
 - Missing or invalid authority means no deletion.
 - The same authorised deletion request must be safely idempotent.
 - BOT-04 must not report successful deletion before authoritative
@@ -60,18 +61,21 @@ BOT-04 must not:
 - perform ownership decisions
 - perform permission decisions
 
-## 4. Fleet Deletion Boundary
+## 4. Fleet Separation Boundary
 
-Fleet-specific approval remains outside BOT-04.
+BOT-04 is deliberately generic and contains no Fleet-specific approval
+workflow.
 
-Where the Fleet architecture requires Contractor approval, that approval
-must be established by the appropriate upstream authority before BOT-04
-receives the deletion operation.
+If Fleet architecture requires Contractor approval before a Fleet entry
+can be deleted, that warning/approval decision must be established by a
+separate Fleet-specific architectural boundary before BOT-04 receives an
+authorised deletion operation.
 
-If the required approval is absent, invalid, expired, or rejected,
-BOT-04 must not perform the deletion.
+BOT-04 does not request, evaluate, approve, reject, or store Fleet
+Contractor approval semantics.
 
-BOT-04 does not own Fleet authority or Contractor authority.
+The separate Fleet approval component may call BOT-04 only after the
+required approval outcome has become authoritative.
 
 ## 5. Conceptual Input Contract
 
@@ -88,10 +92,7 @@ Conceptual shape:
       "request_id": "uuid-v4",
       "target_type": "string_entity_identifier",
       "target_id": "string_or_number_identifier",
-      "authorisation_reference": {
-        "authority_reference": "string_reference",
-        "approval_evidence": "context_or_reference"
-      }
+      "authorisation_reference": "string_reference"
     }
 
 The exact representation of authority evidence is an implementation
@@ -99,6 +100,8 @@ contract decision.
 
 BOT-04 must not assume that authority evidence must use one specific
 technical mechanism unless separately authorised.
+
+Approval workflows are not part of the generic Delete Bot request.
 
 ## 6. No Caller-Controlled Deletion Semantics
 
@@ -111,7 +114,7 @@ raw flags such as:
 - tombstone
 
 Deletion semantics are determined by the authorised target/domain
-contract.
+delection contract.
 
 BOT-04 executes the semantics that have been authorised.
 
@@ -209,6 +212,7 @@ BOT-04 does not own:
 - Authentication
 - Permissions
 - Business-domain rules
+- Fleet warning/approval workflows
 - Presentation lifecycle
 - Archive lifecycle
 - Trash lifecycle
@@ -222,6 +226,8 @@ BOT-04 does not:
 - check user ownership
 - perform permission evaluation
 - manage UI confirmation
+- manage Fleet warnings
+- manage Contractor approval
 - manage Archive
 - manage Trash
 - manage Restore

@@ -1,4 +1,4 @@
-# Work_Disk Web — BOT-04 Profile
+# Work_Disk Web — BOT-04 Delete Bot Profile
 
 ## Identity
 
@@ -6,7 +6,7 @@
 **Name:** Delete Bot
 **Path:** `tools/lifecycle/delete`
 **Domain:** Lifecycle / Deletion
-**Role:** Authorised deletion execution boundary
+**Role:** Authorised generic deletion execution boundary
 
 ## Governing Principle
 
@@ -24,15 +24,18 @@ BOT-04 does not create, grant, validate, replace, or own domain authority.
 Required authority is established upstream by the applicable domain or
 authorisation boundary.
 
-Fleet-specific and Contractor-specific approval remain outside BOT-04.
+Fleet warning and Contractor approval are outside BOT-04 and belong to a
+separate Fleet-specific logical board.
 
 ## Input Boundary
 
 A deletion request contains the required request identity, target identity,
-and authoritative authorisation information.
+and authoritative authorisation reference.
 
 BOT-04 does not accept caller-controlled deletion semantics or caller-
 controlled cascade scope.
+
+Generic deletion does not require Fleet-specific approval fields.
 
 ## Execution Boundary
 
@@ -73,8 +76,10 @@ BOT-04 is not responsible for:
 
 - account or identity authority
 - fleet authority
+- Contractor approval
 - permission systems
 - ownership decisions
+- Fleet warnings
 - archive
 - trash
 - restore
@@ -89,11 +94,11 @@ BOT-04 is not responsible for:
 
 BOT-04 has unit and integration verification covering the public result
 contract, execution boundary, failure mapping, and complete authorised
-execution flow.
+execution flow, including generic deletion without Fleet approval fields.
 
 ## Repository State
 
-Implementation commit:
+Original implementation commit:
 
 `3bda5f7`
 
@@ -101,9 +106,8 @@ Commit message:
 
 `Implement BOT-04 delete lifecycle tool`
 
-Documentation profile status:
-
-Final documentation artifact for the completed BOT-04 implementation.
+Current feature branch refines BOT-04 as the generic Delete Bot and keeps
+Fleet warning/approval in a separate future board.
 
 ## Boundary Rule
 

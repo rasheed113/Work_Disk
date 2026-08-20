@@ -4,17 +4,16 @@
 ## 1. Architecture Baseline
 
 - BLUEPRINT.md approved and preserved.
-- All BOT-04 architectural invariants must remain intact.
+- BOT-04 is the generic deletion execution boundary.
+- Fleet warning/Contractor approval is explicitly outside BOT-04.
+- A separate Fleet-specific logical board will own Fleet deletion warning,
+  approval, rejection, and related workflow decisions.
 - No implementation decision may silently override the Blueprint.
 
 ## 2. Implementation Contract
 
-Create:
-
-`IMPLEMENTATION_CONTRACT.md`
-
-The contract must translate the Blueprint into precise implementation
-requirements, including:
+`IMPLEMENTATION_CONTRACT.md` translates the Blueprint into precise
+implementation requirements, including:
 
 - deletion request boundary
 - authoritative authorisation reference
@@ -22,7 +21,7 @@ requirements, including:
 - deletion execution boundary
 - deletion semantics boundary
 - cascade boundary
-- Fleet approval boundary
+- Fleet separation boundary
 - idempotency
 - failure handling
 - atomicity boundary
@@ -42,10 +41,11 @@ Implementation must follow only:
 2. BOT-04 BLUEPRINT.md
 3. BOT-04 IMPLEMENTATION_CONTRACT.md
 
-The implementation must remain limited to deletion execution.
+The implementation must remain limited to generic deletion execution.
 
 It must not introduce:
 
+- Fleet warning/approval workflow
 - Archive
 - Trash
 - Restore
@@ -61,13 +61,14 @@ It must not introduce:
 
 Tests must verify at minimum:
 
-- authorised deletion
+- authorised generic deletion
 - missing authority rejection
 - invalid authority rejection
 - expired/rejected authority handling
 - malformed target rejection
 - identifier-only request rejection
-- Fleet approval boundary
+- generic deletion without Fleet approval fields
+- Fleet approval separation boundary
 - caller-controlled mode rejection
 - caller-controlled cascade rejection
 - idempotent retry behaviour
@@ -82,8 +83,7 @@ Tests must verify at minimum:
 
 Before documentation completion:
 
-- Blueprint remains unchanged unless an explicit architectural decision
-  authorises a change.
+- Blueprint remains aligned with the approved generic Delete Bot boundary.
 - Implementation Contract is satisfied.
 - Required tests pass.
 - Integration tests pass.
@@ -93,23 +93,23 @@ Before documentation completion:
 
 ## 6. Completion Documentation
 
-After implementation and tests are complete:
+README and PROFILE describe the completed generic Delete Bot without
+becoming replacements for the Blueprint or Implementation Contract.
 
-Create:
+## 7. Separate Fleet Board
 
-`README.md`
+Fleet-specific warning/approval is intentionally deferred to a separate
+logical board.
 
-README must describe the completed BOT-04 implementation without becoming
-a replacement for the Blueprint or Implementation Contract.
+That future board will define, at its own architectural boundary:
 
-## 7. Profile
+- Fleet entry deletion warning
+- Contractor account confirmation
+- approval/rejection outcomes
+- cancellation on rejection
+- authority hand-off to BOT-04 after approval
 
-Create the BOT-04 profile only after implementation is complete.
-
-The profile is the final identity and boundary record.
-
-It must not introduce responsibilities that are absent from the approved
-architecture.
+No Fleet approval logic is implemented in BOT-04.
 
 ## 8. Final Repository Gate
 
@@ -126,19 +126,16 @@ Before committing:
 
 ## 9. Git Completion
 
-BOT-04 documentation and implementation are committed together only after
-the complete BOT-04 scope has passed its final verification.
+BOT-04 is complete only after implementation and tests pass.
 
-Required final sequence:
+The repository publication sequence is:
 
-1. `git add`
-2. `git diff --cached --check`
-3. `git commit`
-4. `git push`
-5. Verify clean working tree.
-6. Verify local and remote HEAD.
-
-No per-file commit is required during BOT-04 construction.
+1. inspect intended changes
+2. verify tests
+3. verify diff/checks
+4. commit the complete BOT-04 scope
+5. push the authorised branch
+6. verify remote state
 
 ## 10. Stop Rule
 
@@ -153,13 +150,12 @@ Return to architecture before continuing.
 
 BOT-04 is complete only when:
 
-- Blueprint is preserved.
+- Blueprint is satisfied.
 - Implementation Contract is satisfied.
-- Implementation is complete.
+- Generic Delete Bot implementation is complete.
 - Required tests pass.
 - Integration boundary passes.
 - README is complete.
 - Profile is complete.
+- No Fleet approval workflow has entered BOT-04.
 - No unrelated responsibility has entered BOT-04.
-- Final commit is created.
-- Changes are successfully pushed.

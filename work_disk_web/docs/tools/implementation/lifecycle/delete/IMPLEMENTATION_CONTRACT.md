@@ -27,6 +27,7 @@ It must not implement:
 - authentication
 - Fleet authority
 - Contractor approval
+- Fleet warning/approval workflow
 - Archive
 - Trash
 - Restore
@@ -35,6 +36,9 @@ It must not implement:
 - UI behaviour
 - unrelated cleanup
 - universal orchestration
+
+Fleet-specific approval is a separate upstream concern. BOT-04 only
+receives the resulting authoritative deletion authority.
 
 ## 3. Deletion Request Boundary
 
@@ -46,6 +50,8 @@ A deletion request must contain sufficient information to identify:
 - authoritative authorisation reference
 
 An identifier alone is never sufficient authority.
+
+Generic BOT-04 requests must not require Fleet-specific approval fields.
 
 ## 4. Authorisation Boundary
 
@@ -64,12 +70,13 @@ BOT-04 must reject a request when required authority is:
 
 No deletion may occur after an authority failure.
 
-## 5. Fleet Approval Boundary
+## 5. Fleet Separation Boundary
 
-Fleet and Contractor approval remain outside BOT-04.
+Fleet warning and Contractor approval remain outside BOT-04.
 
-Where Fleet architecture requires Contractor approval, BOT-04 may execute
-only after the required upstream approval has been established.
+If Fleet architecture requires Contractor approval, a separate Fleet
+approval boundary must establish that outcome before BOT-04 receives the
+authorised deletion request.
 
 BOT-04 must not:
 
@@ -77,6 +84,7 @@ BOT-04 must not:
 - decide approval
 - replace Contractor authority
 - bypass Fleet authority
+- encode Fleet approval semantics into the generic deletion request
 
 ## 6. Target Validation
 
@@ -94,7 +102,7 @@ An undefined target behaviour requires:
 ## 7. Deletion Semantics
 
 Deletion semantics are determined by the authorised target/domain
-contract.
+delection contract.
 
 The caller must not independently select destructive semantics through
 arbitrary runtime flags.
@@ -216,7 +224,7 @@ Malformed or unauthorised input must fail safely.
 
 Tests must cover at minimum:
 
-- authorised deletion
+- authorised generic deletion
 - missing authority
 - invalid authority
 - expired authority
@@ -224,7 +232,8 @@ Tests must cover at minimum:
 - malformed target
 - unsupported target
 - identifier-only request
-- Fleet approval boundary
+- generic deletion without Fleet approval fields
+- Fleet approval separation boundary
 - caller-controlled deletion semantics
 - caller-controlled cascade
 - repeated authorised request
