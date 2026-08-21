@@ -1,0 +1,2 @@
+# BOT-39 — Data Sync Tool
+Authorised synchronization-intent boundary. Provider owns transport, reconciliation, conflict resolution, ordering and persistence. Attacks: replay, stale cursor, authority spoofing, scope escape, duplicate delivery, conflict loss, partial sync, transport failure, clock skew, deleted-data resurrection, cross-account leakage, retry amplification, cursor substitution, policy bypass, UI coupling, persistence leakage, boundary drift. Contract validates all references before provider delegation.
