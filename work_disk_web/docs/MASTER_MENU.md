@@ -133,21 +133,31 @@
 
 Customisation includes hide/unhide, add/remove from dashboard, pin/unpin, reorder and reset-to-default. Dashboard component deletion is not a customisation operation.
 
-## 6. Documentation Areas
+## 6. Presentation Stack — Architecture Phase
+- Repository presentation-stack audit — **DESIGNED**
+- Presentation architecture attack — **DESIGNED**
+- Selected foundation: React + TypeScript + Vite + React Router + standards-based CSS/design tokens — **DESIGNED**
+- Presentation runtime implementation — **PLANNED**
+
+The selected presentation stack is a UI foundation only. Domain ownership remains in Work_Disk services/contracts. Runtime implementation is not claimed until the presentation boundary, blueprint, contract and implementation/test gates are completed.
+
+## 7. Documentation Areas
 - Account documentation — **IMPLEMENTED**
 - Profile documentation — **IMPLEMENTED**
 - Tool documentation — **IMPLEMENTED**
 - Master Menu — **IMPLEMENTED**
 - Dashboard architecture documentation — **DESIGNED**
+- Presentation stack architecture documentation — **DESIGNED**
 
-## 7. Current Audit Notes
+## 8. Current Audit Notes
 - This menu is an inventory, not a replacement for individual architecture contracts.
 - A feature must not be marked IMPLEMENTED merely because it was discussed or designed.
 - Duplicate or overlapping capabilities must be resolved at the architecture/boundary level before adding another Tool-Bot.
 - CI is not marked PASS unless an actual workflow run is observed.
 - Runtime dashboard implementation is not claimed until the repository's actual web presentation stack is identified and implemented against it.
+- The presentation stack is not itself a domain authority and must communicate through explicit service contracts/adapters.
 
-## 8. Update Rule
+## 9. Update Rule
 Every future addition follows:
 
 **Architecture → Attack → Boundary → Blueprint → Contract → Roadmap → Implementation → Tests → Docs → PR → Review → Merge → Main Verification → Master Menu Update**
@@ -156,7 +166,10 @@ The Master Menu answers:
 
 > **What does Work_Disk actually have right now?**
 
-## 9. Change Log
+## 10. Change Log
+### v1.2 — Presentation stack architecture phase
+Recorded the repository presentation-stack audit and the selected React + TypeScript + Vite + React Router foundation. Runtime implementation remains explicitly unclaimed.
+
 ### v1.1 — Dashboard architecture phase
 Added the attacked 12-component dashboard baseline, boundaries, blueprint and contract. Runtime implementation remains explicitly unclaimed until the repository presentation stack is identified and the implementation/test gates are completed.
 
