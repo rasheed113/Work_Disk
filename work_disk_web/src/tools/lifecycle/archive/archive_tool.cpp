@@ -20,20 +20,30 @@ ArchiveResult ArchiveTool::handle(const ArchiveCommand& command) const {
         return {ArchiveResultCode::AuthorityRejected, 0};
     }
 
-    // The executor owns the authoritative domain transition. The store remains
-    // the durable lifecycle boundary; concrete implementations may atomically
-    // claim/idempotently resolve the request before execution.
-    const auto result = executor_.execute(command);
-    if (result.code == ArchiveResultCode::ExecutionFailed ||
-        result.code == ArchiveResultCode::VersionConflict ||
-        result.code == ArchiveResultCode::LifecycleConflict ||
-        result.code == ArchiveResultCode::NotFound) {
-        return result;
+    const auto begin_result = store_.begin(command);
+    switch (begin_result.code) {
+        case ArchiveResultCode::AlreadyArchived:
+        case ArchiveResultCode::AlreadyUnarchived:
+            return begin_result;
+        case ArchiveResultCode::NotFound:
+        case ArchiveResultCode::VersionConflict:
+        case ArchiveResultCode::LifecycleConflict:
+        case ArchiveResultCode::InvalidRequest:
+        case ArchiveResultCode::AuthorityRejected:
+            return begin_result;
+        default:
+            break;
     }
 
-    return command.operation == ArchiveOperation::Archive
-        ? store_.archive(command)
-        : store_.unarchive(command);
+    const auto execution_result = executor_.execute(command);
+    if (execution_result.code == ArchiveResultCode::ExecutionFailed ||
+        execution_result.code == ArchiveResultCode::VersionConflict ||
+        execution_result.code == ArchiveResultCode::LifecycleConflict ||
+        execution_result.code == ArchiveResultCode::NotFound) {
+        return execution_result;
+    }
+
+    return store_.complete(command, execution_result);
 }
 
 } // namespace work_disk::tools::archive
