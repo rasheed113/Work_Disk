@@ -115,6 +115,10 @@ DeleteResult DeleteTool::execute(
         return releaseRejected(request);
     }
 
+    if (request.approvalDecision == DeleteApprovalDecision::Pending) {
+        return DeleteResult::pendingApproval(request.requestId);
+    }
+
     return DeleteResult::invalidRequest(request.requestId);
 }
 
@@ -157,6 +161,10 @@ DeleteResult DeleteTool::executeApproved(
 DeleteResult DeleteTool::releaseRejected(
     const DeleteRequest& request
 ) const {
+    if (!pendingOperationStore_.isHeld(request.requestId)) {
+        return DeleteResult::pendingOperationConflict(request.requestId);
+    }
+
     const auto releaseResult =
         pendingOperationStore_.release(request.requestId);
 
