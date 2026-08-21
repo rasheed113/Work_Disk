@@ -116,7 +116,31 @@ The presentation stack remains a UI foundation. Domain ownership remains in Work
 
 Generic component infrastructure does not redefine Dashboard's 12 core boundaries.
 
-## 8. Documentation Areas
+## 8. Feature Surfaces — P0 Account/Profile + Workspace
+- Feature surface audit and priority attack — **IMPLEMENTED/DOCUMENTED**
+- Account/Profile + Workspace architecture attack — **IMPLEMENTED/DOCUMENTED**
+- Account/Profile + Workspace boundary map — **IMPLEMENTED/DOCUMENTED / SEALED**
+- Account/Profile + Workspace blueprint — **IMPLEMENTED/DOCUMENTED**
+- Account/Profile + Workspace implementation contract — **IMPLEMENTED/DOCUMENTED / SEALED**
+- Domain-neutral AccountProfileModel contract — **IMPLEMENTED**
+- Workspace Shell — **IMPLEMENTED**
+- Account/Profile surface — **IMPLEMENTED**
+- Workspace navigation — **IMPLEMENTED**
+- Dashboard integration route — **IMPLEMENTED**
+- Settings destination registration — **IMPLEMENTED / FEATURE DEFERRED**
+- Account/Profile + Workspace feature tests — **IMPLEMENTED**
+- Web CI verification — **PASS / GREEN**
+
+### Locked feature boundaries
+1. Account Context Surface
+2. Profile Surface
+3. Workspace Shell
+4. Workspace Navigation
+5. Profile Empty State
+
+No account/profile persistence, authentication, permission grants, or database access is owned by this presentation surface.
+
+## 9. Documentation Areas
 - Account documentation — **IMPLEMENTED**
 - Profile documentation — **IMPLEMENTED**
 - Tool documentation — **IMPLEMENTED**
@@ -125,8 +149,9 @@ Generic component infrastructure does not redefine Dashboard's 12 core boundarie
 - Dashboard runtime documentation — **IMPLEMENTED**
 - Presentation stack architecture documentation — **IMPLEMENTED**
 - Reusable component system documentation — **IMPLEMENTED**
+- Account/Profile + Workspace feature documentation — **IMPLEMENTED**
 
-## 9. Current Audit Notes
+## 10. Current Audit Notes
 - This menu is an inventory, not a replacement for individual architecture contracts.
 - A feature must not be marked IMPLEMENTED merely because it was discussed or designed.
 - Duplicate or overlapping capabilities must be resolved at the architecture/boundary level before adding another Tool-Bot.
@@ -136,8 +161,10 @@ Generic component infrastructure does not redefine Dashboard's 12 core boundarie
 - The presentation stack is not itself a domain authority and communicates through explicit service contracts/adapters.
 - Reusable components must follow the sealed component system contract and cannot become domain authorities.
 - Component runtime implementation is recorded only after PR #77 was merged to `main` and its CI verification was observed green.
+- Account/Profile + Workspace runtime is recorded only after PR #78 was merged to `main` and Web workflow run #9 completed successfully.
+- Settings is only registered as a workspace destination; its feature implementation remains deferred.
 
-## 10. Update Rule
+## 11. Update Rule
 Every future addition follows:
 
 **Architecture → Attack → Boundary → Blueprint → Contract → Roadmap → Implementation → Tests → Docs → PR → Review → Merge → Main Verification → Master Menu Update**
@@ -146,7 +173,10 @@ The Master Menu answers:
 
 > **What does Work_Disk actually have right now?**
 
-## 11. Change Log
+## 12. Change Log
+### v1.7 — Account/Profile + Workspace feature surface
+Recorded the P0 Account/Profile + Workspace architecture attack, five feature boundaries, blueprint, sealed contract, domain-neutral presentation model, Workspace Shell, Account/Profile surface, navigation, Dashboard route integration, deferred Settings destination, feature tests and green Web CI verification.
+
 ### v1.6 — Reusable component system runtime implementation
 Recorded the merged component runtime foundation, 40-component registry, shared 3D visual foundation, reusable UI/container/input/data/specialised components, Dashboard Card/Cards Gallery infrastructure, invariant tests and green CI verification.
 
