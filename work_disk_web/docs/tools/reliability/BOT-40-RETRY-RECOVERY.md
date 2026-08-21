@@ -1,0 +1,2 @@
+# BOT-40 — Retry / Recovery Tool
+Reusable retry-intent boundary. Provider owns backoff, idempotency, recovery policy and persistence. Attacks: replay, retry storm, duplicate mutation, attempt overflow, authority spoofing, stale operation, partial failure, recovery divergence, hidden side effects, provider failure, scope escalation, UI coupling, persistence leakage, policy bypass, timing leakage, state resurrection, boundary drift. Contract rejects invalid references and negative attempts before delegation.
