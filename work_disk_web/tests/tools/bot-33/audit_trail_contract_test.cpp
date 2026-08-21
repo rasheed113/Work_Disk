@@ -1,5 +1,7 @@
 #include "../../../src/tools/bot-33/audit_trail/audit_trail.h"
 #include <cassert>
+#include <chrono>
+#include <string>
 
 using namespace work_disk::tools::bot33;
 
@@ -15,9 +17,12 @@ class ContractProvider final : public Provider {
 };
 
 int main() {
+  const auto now = std::chrono::system_clock::now().time_since_epoch().count();
+  const auto token = std::to_string(now);
   ContractProvider provider;
-  Event valid{"event-1", "request-1", "authority-1", "actor-1", "subject-1",
-              "profile.updated", "evidence-1", 1700000000, 0};
+  Event valid{token, token + ":request", token + ":authority", token + ":actor",
+              token + ":subject", token + ":event", token + ":evidence", 1, 0};
+
   const auto accepted = execute(valid, provider);
   assert(accepted.accepted);
   assert(provider.called);
