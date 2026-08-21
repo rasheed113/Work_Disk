@@ -1,0 +1,2 @@
+# BOT-49 — AI Assistant Tool
+Provider-backed AI assistant intent boundary for Work_Disk guidance and workflows. Provider owns model selection, prompts, safety policy, retrieval, memory and persistence. Attacks: prompt injection, authority spoofing, context leakage, cross-account leakage, tool escalation, data exfiltration, unsafe action suggestion, replay, stale context, provider failure, hidden persistence, UI coupling, policy bypass, model substitution, timing leakage, fabricated domain state, boundary drift.
