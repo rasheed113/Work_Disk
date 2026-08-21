@@ -158,8 +158,7 @@ TrashResult TrashTool::empty(
     const auto entries = store_.list();
     for (const TrashEntry& listed : entries) {
         TrashEntry claimed{};
-        const TrashClaimResult claim = store_.claimForDestruction(listed.itemId, claimed);
-        if (claim == TrashClaimResult::Claimed) {
+        if (store_.claimForDestruction(listed.itemId, claimed) == TrashClaimResult::Claimed) {
             (void)destroyClaimed(operationId, claimed);
         }
     }
@@ -184,10 +183,12 @@ TrashResult TrashTool::purgeExpired(
     }
 
     const auto entries = store_.list();
+    bool foundExpired = false;
     for (const TrashEntry& listed : entries) {
         if (now < listed.expiresAt) {
             continue;
         }
+        foundExpired = true;
 
         TrashEntry claimed{};
         if (store_.claimForDestruction(listed.itemId, claimed) == TrashClaimResult::Claimed) {
@@ -196,8 +197,11 @@ TrashResult TrashTool::purgeExpired(
     }
 
     const auto remaining = store_.list().size();
+    if (!foundExpired) {
+        return TrashResult::nothingToPurge(operationId);
+    }
     if (remaining == 0) {
-        return TrashResult::emptied(operationId);
+        return TrashResult::purged(operationId);
     }
     return TrashResult::partiallyEmptied(operationId, remaining);
 }
