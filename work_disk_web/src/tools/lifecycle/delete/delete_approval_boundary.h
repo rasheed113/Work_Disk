@@ -2,27 +2,33 @@
 
 #include "delete_request.h"
 
+#include <string>
+
 namespace work_disk::tools::lifecycle::delete_tool {
 
 struct DeleteApprovalResult {
     DeleteApprovalDecision decision;
-    const char* failureCode;
-    const char* approvalEvidence;
+    std::string approvalEvidence;
+    bool failed = false;
 
-    static DeleteApprovalResult pending() noexcept {
-        return {DeleteApprovalDecision::Pending, nullptr, nullptr};
+    static DeleteApprovalResult pending() {
+        return {DeleteApprovalDecision::Pending, {}, false};
     }
 
-    static DeleteApprovalResult approved(const char* evidence) noexcept {
-        return {DeleteApprovalDecision::Approved, nullptr, evidence};
+    static DeleteApprovalResult approved(
+        std::string evidence
+    ) {
+        return {DeleteApprovalDecision::Approved, std::move(evidence), false};
     }
 
-    static DeleteApprovalResult rejected(const char* evidence) noexcept {
-        return {DeleteApprovalDecision::Rejected, nullptr, evidence};
+    static DeleteApprovalResult rejected(
+        std::string evidence
+    ) {
+        return {DeleteApprovalDecision::Rejected, std::move(evidence), false};
     }
 
-    static DeleteApprovalResult failed(const char* code) noexcept {
-        return {DeleteApprovalDecision::None, code, nullptr};
+    static DeleteApprovalResult failure() {
+        return {DeleteApprovalDecision::None, {}, true};
     }
 };
 
