@@ -9,6 +9,8 @@ class WarningApprovalBot {
 public:
     WarningApprovalBot(
         ApprovalStore& store,
+        CallerAuthorizationBoundary& callerAuthorization,
+        DecisionAuthenticationBoundary& decisionAuthentication,
         NotificationBoundary& notification,
         DecisionConsumerBoundary& decisionConsumer
     ) noexcept;
@@ -27,6 +29,8 @@ public:
 
 private:
     ApprovalStore& store_;
+    CallerAuthorizationBoundary& callerAuthorization_;
+    DecisionAuthenticationBoundary& decisionAuthentication_;
     NotificationBoundary& notification_;
     DecisionConsumerBoundary& decisionConsumer_;
 };
