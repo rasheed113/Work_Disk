@@ -1,0 +1,2 @@
+#include "feed_tool.h"
+namespace work_disk::tools::feed { FeedResult FeedTool::read(const FeedRequest& r) const { FeedResult out; if(r.request_id.empty()||r.authority_reference.empty()||r.viewer_reference.empty()||r.scope_reference.empty()||r.limit==0||r.limit>200){out.error="InvalidRequest";return out;} if(!p_.assemble(r,out)){out.accepted=false;if(out.error.empty())out.error="Rejected";return out;} out.accepted=true; return out; } }
