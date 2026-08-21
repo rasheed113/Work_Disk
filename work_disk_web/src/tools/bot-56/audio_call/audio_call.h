@@ -1,0 +1,3 @@
+#pragma once
+#include <string>
+namespace work_disk::tools::bot56 { enum class Operation{Invite,Accept,End}; struct Request{std::string request_id,caller_context,session_reference;Operation operation;}; struct Result{bool accepted{false};std::string session_reference;}; class Provider{public:virtual~Provider()=default;virtual Result apply(const Request&)=0;}; Result execute(const Request&,Provider&); }

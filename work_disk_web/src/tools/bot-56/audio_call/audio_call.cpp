@@ -1,0 +1,2 @@
+#include "audio_call.h"
+namespace work_disk::tools::bot56 { Result execute(const Request&r,Provider&p){if(r.request_id.empty()||r.caller_context.empty()||(r.operation!=Operation::Invite&&r.session_reference.empty()))return{};return p.apply(r);} }
