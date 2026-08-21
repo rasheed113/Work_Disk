@@ -17,6 +17,8 @@ enum class TrashOutcome {
     Expired,
     Emptied,
     PartiallyEmptied,
+    Purged,
+    NothingToPurge,
     Failed
 };
 
@@ -31,6 +33,8 @@ public:
     static TrashResult expired(std::string operationId);
     static TrashResult emptied(std::string operationId);
     static TrashResult partiallyEmptied(std::string operationId, std::size_t remaining);
+    static TrashResult purged(std::string operationId);
+    static TrashResult nothingToPurge(std::string operationId);
     static TrashResult failed(std::string operationId, TrashError error);
 
     TrashOutcome outcome() const noexcept;
