@@ -89,7 +89,23 @@ Customisation includes hide/unhide, add/remove from dashboard, pin/unpin, reorde
 
 The presentation stack remains a UI foundation. Domain ownership remains in Work_Disk services/contracts. No domain database access is performed by Dashboard components.
 
-## 7. Documentation Areas
+## 7. Reusable Component System — Boundary / Blueprint / Contract
+- Component ecosystem audit — **IMPLEMENTED/DOCUMENTED**
+- Component architecture attack — **IMPLEMENTED/DOCUMENTED**
+- Component boundary map — **IMPLEMENTED/DOCUMENTED / SEALED**
+- Component system blueprint — **IMPLEMENTED/DOCUMENTED**
+- Component system contract — **IMPLEMENTED/DOCUMENTED / SEALED**
+
+### Locked component layers
+- Foundation: tokens, typography, layout, responsive, motion and 3D surface primitives
+- Core UI: actions, identity, feedback and basic interaction components
+- Containers: cards, panels, sections, grids, stacks, dialogs and drawers
+- Input/Data: inputs, selectors, search, filters, forms, lists and tables
+- Work_Disk specialised: profile, capability, notification, activity, media, chat and feed components
+
+Generic component infrastructure does not redefine Dashboard's 12 core boundaries.
+
+## 8. Documentation Areas
 - Account documentation — **IMPLEMENTED**
 - Profile documentation — **IMPLEMENTED**
 - Tool documentation — **IMPLEMENTED**
@@ -97,8 +113,9 @@ The presentation stack remains a UI foundation. Domain ownership remains in Work
 - Dashboard architecture documentation — **IMPLEMENTED**
 - Dashboard runtime documentation — **IMPLEMENTED**
 - Presentation stack architecture documentation — **IMPLEMENTED**
+- Reusable component system documentation — **IMPLEMENTED**
 
-## 8. Current Audit Notes
+## 9. Current Audit Notes
 - This menu is an inventory, not a replacement for individual architecture contracts.
 - A feature must not be marked IMPLEMENTED merely because it was discussed or designed.
 - Duplicate or overlapping capabilities must be resolved at the architecture/boundary level before adding another Tool-Bot.
@@ -106,8 +123,9 @@ The presentation stack remains a UI foundation. Domain ownership remains in Work
 - Dashboard runtime is implemented as a presentation vertical slice with domain-neutral typed inputs and empty states when authoritative data is unavailable.
 - Dashboard personalisation never deletes a feature or its domain data.
 - The presentation stack is not itself a domain authority and communicates through explicit service contracts/adapters.
+- Reusable components must follow the sealed component system contract and cannot become domain authorities.
 
-## 9. Update Rule
+## 10. Update Rule
 Every future addition follows:
 
 **Architecture → Attack → Boundary → Blueprint → Contract → Roadmap → Implementation → Tests → Docs → PR → Review → Merge → Main Verification → Master Menu Update**
@@ -116,7 +134,10 @@ The Master Menu answers:
 
 > **What does Work_Disk actually have right now?**
 
-## 10. Change Log
+## 11. Change Log
+### v1.5 — Reusable component system boundary, blueprint and contract
+Recorded the component ecosystem audit, architecture attack, 40-component boundary map across five layers, blueprint and sealed contract.
+
 ### v1.4 — Dashboard runtime vertical slice
 Recorded the implemented Dashboard runtime, twelve locked component boundaries, non-destructive customisation, Cards Gallery, tests and runtime documentation.
 
