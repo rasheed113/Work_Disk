@@ -40,7 +40,7 @@ Authorised Caller
     -> BOT-05 Warning & Approval Bot
     -> Notification Boundary
     -> Target Approver
-    -> Notification/Decision Boundary
+    -> Authenticated Decision Boundary
     -> BOT-05
     -> Registered Decision Consumer
 ```
@@ -58,7 +58,10 @@ A warning request must identify, at minimum:
 - target ID;
 - approver identity/reference;
 - human-readable warning context;
-- notification reference after delivery.
+- decision consumer reference;
+- immutable action fingerprint.
+
+The action fingerprint is an opaque caller-generated identity for the exact action context being approved. BOT-05 does not need to understand its hashing algorithm; it must preserve and compare the value exactly.
 
 The warning payload may contain enough target information for the approver to make an informed decision, subject to the caller/domain privacy contract.
 
@@ -93,9 +96,13 @@ A conflicting second decision must not overwrite the first decision.
 
 BOT-05 does not decide who is entitled to approve.
 
-Approver identity and approval authority are established by the caller/domain authority and supplied as request context.
+Caller authority is checked through an injected caller-authorisation boundary.
 
-BOT-05 may validate structural completeness and request ownership, but it must not invent permissions or roles.
+Approver identity and approval authority are checked through an injected decision-authentication boundary.
+
+The decision authenticator is the trust boundary for the real authenticated principal; a caller-supplied name or non-empty string alone is never considered authentication.
+
+BOT-05 must not invent permissions or roles.
 
 ## 9. Notification Boundary
 
@@ -108,6 +115,8 @@ The notification component is responsible for delivery and for returning an auth
 Notification delivery success is not approval.
 
 Notification failure is not rejection.
+
+Notification retries must remain correlated to the same `approvalRequestId`.
 
 ## 10. Action Boundary
 
@@ -137,10 +146,11 @@ The consumer receives no implicit authority beyond the decision itself.
 ## 12. Security Invariants
 
 - Unknown approval request IDs are rejected.
-- Unknown callers are rejected according to the caller-authentication boundary.
+- Unauthorised callers are rejected.
+- Unauthenticated decisions are rejected.
 - Decisions for another request cannot be applied to this request.
-- A decision for one target cannot be rebound to another target.
-- A decision cannot change caller identity, action type, target type, or target ID.
+- A decision for one action fingerprint cannot be rebound to another action context.
+- Caller, action type, target type, target ID, approver, and action fingerprint remain immutable for the request lifetime.
 - Notification transport is not trusted as action authority.
 - Duplicate decisions are idempotent.
 - Conflicting replayed decisions cannot overwrite an established terminal state.
@@ -154,7 +164,7 @@ BOT-05 stores only the approval context required by the approved workflow and au
 
 Full domain records must not be copied into BOT-05 merely for convenience.
 
-The target ID/reference is the primary correlation mechanism.
+The target ID/reference and action fingerprint are the primary correlation mechanisms.
 
 ## 14. Failure Semantics
 
@@ -165,6 +175,8 @@ If notification delivery fails, the request remains pending; delivery failure is
 If a decision cannot be authenticated or correlated, it is rejected and the request remains pending.
 
 If a conflicting terminal decision is received after a terminal decision already exists, the original decision remains authoritative and the conflict is recorded according to the audit contract.
+
+If decision dispatch to the action consumer fails after the terminal decision is durably committed, the decision is not rolled back. The same terminal decision may be safely re-delivered by retry.
 
 Undefined failure semantics require STOP — do not guess.
 
@@ -191,10 +203,11 @@ BOT-05 does not own:
 - deletion;
 - freezing/unfreezing;
 - notification transport;
-- authentication;
+- caller authentication infrastructure;
+- approver authentication infrastructure;
 - identity management;
 - ownership decisions;
-- permission decisions;
+- permission policy authoring;
 - Fleet business rules;
 - Social business rules;
 - compensation/rollback;
