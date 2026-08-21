@@ -34,9 +34,13 @@ A create request requires non-empty:
 - `targetType`;
 - `targetId`;
 - `approverId`;
-- `warningMessage`.
+- `warningMessage`;
+- `decisionConsumerId`;
+- `actionFingerprint`.
 
 The caller also supplies a decision consumer reference. This is a correlation/dispatch boundary, not an authority grant.
+
+The caller must pass caller authorisation before the request is persisted.
 
 The same request ID must not be rebound to different request content.
 
@@ -57,6 +61,8 @@ BOT-05 must never interpret:
 
 as approval.
 
+Notification retry must remain bound to the same approval request ID.
+
 ## 5. Decision Contract
 
 The decision boundary accepts only:
@@ -69,9 +75,12 @@ A decision must contain:
 - approval request ID;
 - approver ID;
 - decision;
-- authenticated decision reference.
+- authenticated decision reference;
+- action fingerprint.
 
-The implementation must verify structural correlation with the original request.
+The decision authentication boundary must authenticate the actual approving principal. A caller-supplied approver name or non-empty reference is not authentication.
+
+The implementation must verify exact action-fingerprint correlation with the original request before terminal state transition.
 
 ## 6. No Expiry
 
@@ -85,7 +94,7 @@ Cancellation is not part of the initial public API unless separately approved.
 
 The first valid terminal decision establishes the request's terminal state.
 
-A repeated identical decision returns an idempotent result and does not re-dispatch the action.
+A repeated identical decision returns an idempotent result and may re-deliver the same immutable decision to the registered consumer for transport recovery.
 
 A conflicting second decision is rejected as a decision conflict and cannot overwrite the established state.
 
@@ -134,24 +143,27 @@ The store abstraction must provide atomic create-if-absent and compare-and-set s
 
 ## 12. Decision Dispatch
 
-After a valid first terminal decision is committed, the bot must emit the decision exactly once to the registered decision consumer according to the injected dispatch boundary.
+After a valid terminal decision is committed, the bot emits the decision to the registered decision consumer through the injected dispatch boundary.
 
-If the consumer dispatch fails after the decision is durably committed, retry/reconciliation belongs to the dispatch boundary. The bot must not revert an established approval decision merely because delivery failed.
+If consumer dispatch fails after the decision is durably committed, the decision is not reverted. Re-delivery of the same immutable terminal decision is permitted and must remain idempotent at the action consumer.
 
 ## 13. Security Requirements
 
 Tests must demonstrate:
 
 - request identity binding;
+- caller authentication boundary;
 - caller isolation;
+- approver authentication boundary;
 - approver binding;
 - target binding;
-- action binding;
+- exact action-fingerprint binding;
 - decision replay resistance;
 - conflicting decision rejection;
 - pending-not-approved behaviour;
 - notification-success-not-approval behaviour;
 - notification-failure-not-rejection behaviour;
+- restart does not manufacture approval;
 - no action execution inside BOT-05.
 
 ## 14. Completion Gate
