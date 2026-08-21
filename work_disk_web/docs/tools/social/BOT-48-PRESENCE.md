@@ -1,0 +1,2 @@
+# BOT-48 — Presence Tool
+Authorised presence-intent boundary. Provider owns expiry, visibility, privacy and device/session semantics. Attacks: spoofed status, privacy leakage, stale presence, cross-account leakage, replay, status substitution, hidden tracking, device confusion, provider failure, expiry race, UI coupling, scope escalation, persistence leakage, timing leakage, policy bypass, duplicate updates, boundary drift.
