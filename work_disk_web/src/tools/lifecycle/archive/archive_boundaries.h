@@ -13,8 +13,9 @@ public:
 class ArchiveStore {
 public:
     virtual ~ArchiveStore() = default;
-    virtual ArchiveResult archive(const ArchiveCommand& command) = 0;
-    virtual ArchiveResult unarchive(const ArchiveCommand& command) = 0;
+    virtual ArchiveResult begin(const ArchiveCommand& command) = 0;
+    virtual ArchiveResult complete(const ArchiveCommand& command,
+                                   const ArchiveResult& execution_result) = 0;
 };
 
 class ArchiveExecutor {
