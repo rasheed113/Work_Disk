@@ -3,6 +3,7 @@
 #include "delete_request.h"
 
 #include <string>
+#include <utility>
 
 namespace work_disk::tools::lifecycle::delete_tool {
 
