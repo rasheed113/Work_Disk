@@ -12,13 +12,15 @@ bool validRequest(const ApprovalRequest& request) {
            !request.targetId.empty() &&
            !request.approverId.empty() &&
            !request.warningMessage.empty() &&
-           !request.decisionConsumerId.empty();
+           !request.decisionConsumerId.empty() &&
+           !request.actionFingerprint.empty();
 }
 
 bool validDecision(const ApprovalDecisionInput& input) {
     return !input.approvalRequestId.empty() &&
            !input.approverId.empty() &&
            !input.authenticatedDecisionReference.empty() &&
+           !input.actionFingerprint.empty() &&
            (input.decision == ApprovalDecision::Approved ||
             input.decision == ApprovalDecision::Rejected);
 }
@@ -27,10 +29,14 @@ bool validDecision(const ApprovalDecisionInput& input) {
 
 WarningApprovalBot::WarningApprovalBot(
     ApprovalStore& store,
+    CallerAuthorizationBoundary& callerAuthorization,
+    DecisionAuthenticationBoundary& decisionAuthentication,
     NotificationBoundary& notification,
     DecisionConsumerBoundary& decisionConsumer
 ) noexcept
     : store_(store),
+      callerAuthorization_(callerAuthorization),
+      decisionAuthentication_(decisionAuthentication),
       notification_(notification),
       decisionConsumer_(decisionConsumer) {}
 
@@ -41,6 +47,11 @@ WarningApprovalResult WarningApprovalBot::createWarning(
 
     if (!validRequest(request)) {
         result.createStatus = ApprovalCreateStatus::InvalidRequest;
+        return result;
+    }
+
+    if (!callerAuthorization_.authorizeCaller(request)) {
+        result.createStatus = ApprovalCreateStatus::UnauthorisedCaller;
         return result;
     }
 
@@ -90,6 +101,24 @@ WarningApprovalResult WarningApprovalBot::receiveDecision(
         return result;
     }
 
+    ApprovalState current;
+    if (!store_.find(input.approvalRequestId, current)) {
+        result.decisionStatus = ApprovalDecisionStatus::UnknownRequest;
+        return result;
+    }
+
+    if (current.request.actionFingerprint != input.actionFingerprint) {
+        result.decisionStatus = ApprovalDecisionStatus::RequestContextMismatch;
+        result.state = current;
+        return result;
+    }
+
+    if (!decisionAuthentication_.authenticateDecision(input, current)) {
+        result.decisionStatus = ApprovalDecisionStatus::UnauthenticatedDecision;
+        result.state = current;
+        return result;
+    }
+
     ApprovalState committed;
     result.decisionStatus = store_.commitDecisionIfPending(input, committed);
     result.state = committed;
@@ -110,6 +139,7 @@ WarningApprovalResult WarningApprovalBot::receiveDecision(
 
         case ApprovalDecisionStatus::UnknownRequest:
         case ApprovalDecisionStatus::InvalidDecision:
+        case ApprovalDecisionStatus::UnauthenticatedDecision:
         case ApprovalDecisionStatus::ApproverMismatch:
         case ApprovalDecisionStatus::RequestContextMismatch:
         case ApprovalDecisionStatus::DecisionConflict:
