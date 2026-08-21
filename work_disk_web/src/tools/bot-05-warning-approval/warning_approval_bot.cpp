@@ -16,6 +16,21 @@ bool validRequest(const ApprovalRequest& request) {
            !request.actionFingerprint.empty();
 }
 
+bool sameRequestContext(
+    const ApprovalRequest& left,
+    const ApprovalRequest& right
+) {
+    return left.approvalRequestId == right.approvalRequestId &&
+           left.callerId == right.callerId &&
+           left.actionType == right.actionType &&
+           left.targetType == right.targetType &&
+           left.targetId == right.targetId &&
+           left.approverId == right.approverId &&
+           left.warningMessage == right.warningMessage &&
+           left.decisionConsumerId == right.decisionConsumerId &&
+           left.actionFingerprint == right.actionFingerprint;
+}
+
 bool validDecision(const ApprovalDecisionInput& input) {
     return !input.approvalRequestId.empty() &&
            !input.approverId.empty() &&
@@ -65,6 +80,12 @@ WarningApprovalResult WarningApprovalBot::createWarning(
         }
 
         result.state = existing;
+
+        // A stable request ID cannot be rebound to different action context.
+        if (!sameRequestContext(existing.request, request)) {
+            result.createStatus = ApprovalCreateStatus::RequestContextMismatch;
+            return result;
+        }
 
         // Notification delivery is transport and may be retried safely when
         // the notification layer itself provides request-id idempotency.
@@ -128,10 +149,6 @@ WarningApprovalResult WarningApprovalBot::receiveDecision(
         case ApprovalDecisionStatus::Rejected:
         case ApprovalDecisionStatus::IdempotentApproved:
         case ApprovalDecisionStatus::IdempotentRejected:
-            // A committed terminal decision is never rolled back because a
-            // consumer is temporarily unavailable. Re-delivery is safe because
-            // the decision is immutable and the action consumer must be
-            // idempotent for the same approvalRequestId.
             if (!decisionConsumer_.deliverDecision(committed)) {
                 result.decisionStatus = ApprovalDecisionStatus::DispatchFailure;
             }
