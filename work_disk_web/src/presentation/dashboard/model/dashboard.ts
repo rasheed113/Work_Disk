@@ -25,36 +25,11 @@ export interface DashboardPreferences {
   order: DashboardCardId[]
 }
 
-export interface DashboardProfile {
-  displayName: string
-  accountId: string
-}
-
-export interface DashboardCapability {
-  id: string
-  title: string
-  description: string
-  available: boolean
-}
-
-export interface DashboardActivityItem {
-  id: string
-  title: string
-  timestamp: string
-}
-
-export interface DashboardNotification {
-  id: string
-  title: string
-  timestamp: string
-  read: boolean
-}
-
-export interface DashboardSummaryMetric {
-  id: string
-  label: string
-  value: string
-}
+export interface DashboardProfile { displayName: string; accountId: string }
+export interface DashboardCapability { id: string; title: string; description: string; available: boolean }
+export interface DashboardActivityItem { id: string; title: string; timestamp: string }
+export interface DashboardNotification { id: string; title: string; timestamp: string; read: boolean }
+export interface DashboardSummaryMetric { id: string; label: string; value: string }
 
 export interface DashboardModel {
   profile: DashboardProfile | null
@@ -82,9 +57,5 @@ export const DASHBOARD_CARD_DEFINITIONS: readonly DashboardCardDefinition[] = [
 export const DEFAULT_DASHBOARD_ORDER: readonly DashboardCardId[] = DASHBOARD_CARD_DEFINITIONS.map(({ id }) => id)
 
 export function createDefaultDashboardPreferences(): DashboardPreferences {
-  return {
-    hidden: [],
-    pinned: [],
-    order: [...DEFAULT_DASHBOARD_ORDER],
-  }
+  return { hidden: [], pinned: [], order: [...DEFAULT_DASHBOARD_ORDER] }
 }
