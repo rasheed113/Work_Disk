@@ -1,0 +1,2 @@
+# BOT-43 — Import Tool
+Authorised import-intent boundary. Provider owns parsing, schema validation, deduplication, conflict resolution and persistence. Attacks: malicious payload, schema confusion, scope escape, authority spoofing, duplicate import, replay, partial import, conflict loss, cross-account leakage, parser exhaustion, provider failure, hidden mutation, UI coupling, stale schema, privilege escalation, persistence leakage, boundary drift.
