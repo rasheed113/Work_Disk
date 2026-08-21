@@ -1,0 +1,2 @@
+#include "document_preview.h"
+namespace work_disk::tools::bot60 { Result execute(const Request&r,Provider&p){if(r.request_id.empty()||r.caller_context.empty()||r.document_reference.empty())return{};if(r.operation==Operation::Convert&&r.target_format.empty())return{};return r.operation==Operation::Preview?p.preview(r):p.convert(r);} }
