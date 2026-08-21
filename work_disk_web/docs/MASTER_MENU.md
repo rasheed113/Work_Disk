@@ -89,12 +89,23 @@ Customisation includes hide/unhide, add/remove from dashboard, pin/unpin, reorde
 
 The presentation stack remains a UI foundation. Domain ownership remains in Work_Disk services/contracts. No domain database access is performed by Dashboard components.
 
-## 7. Reusable Component System — Boundary / Blueprint / Contract
+## 7. Reusable Component System — Runtime Implementation
 - Component ecosystem audit — **IMPLEMENTED/DOCUMENTED**
 - Component architecture attack — **IMPLEMENTED/DOCUMENTED**
 - Component boundary map — **IMPLEMENTED/DOCUMENTED / SEALED**
 - Component system blueprint — **IMPLEMENTED/DOCUMENTED**
 - Component system contract — **IMPLEMENTED/DOCUMENTED / SEALED**
+- Component runtime foundation — **IMPLEMENTED**
+- 40-component registry — **IMPLEMENTED**
+- Foundation primitives including design tokens and 3D Surface — **IMPLEMENTED**
+- Core UI components — **IMPLEMENTED**
+- Container components — **IMPLEMENTED**
+- Input/Data components — **IMPLEMENTED**
+- Work_Disk specialised presentation components — **IMPLEMENTED**
+- Dashboard Card infrastructure — **IMPLEMENTED**
+- Registered Cards Gallery infrastructure — **IMPLEMENTED**
+- Component registry invariant tests — **IMPLEMENTED**
+- Component runtime CI verification — **PASS / GREEN**
 
 ### Locked component layers
 - Foundation: tokens, typography, layout, responsive, motion and 3D surface primitives
@@ -124,6 +135,7 @@ Generic component infrastructure does not redefine Dashboard's 12 core boundarie
 - Dashboard personalisation never deletes a feature or its domain data.
 - The presentation stack is not itself a domain authority and communicates through explicit service contracts/adapters.
 - Reusable components must follow the sealed component system contract and cannot become domain authorities.
+- Component runtime implementation is recorded only after PR #77 was merged to `main` and its CI verification was observed green.
 
 ## 10. Update Rule
 Every future addition follows:
@@ -135,6 +147,9 @@ The Master Menu answers:
 > **What does Work_Disk actually have right now?**
 
 ## 11. Change Log
+### v1.6 — Reusable component system runtime implementation
+Recorded the merged component runtime foundation, 40-component registry, shared 3D visual foundation, reusable UI/container/input/data/specialised components, Dashboard Card/Cards Gallery infrastructure, invariant tests and green CI verification.
+
 ### v1.5 — Reusable component system boundary, blueprint and contract
 Recorded the component ecosystem audit, architecture attack, 40-component boundary map across five layers, blueprint and sealed contract.
 
