@@ -21,16 +21,7 @@ Implementation follows the approved Work_Disk architecture, `BLUEPRINT.md`, and 
 
 ## 3. Storage Boundary
 
-`TrashStore` must provide durable operations for:
-
-- intake
-- lookup
-- atomic claim for restore
-- atomic claim for destruction
-- complete restore
-- complete destruction
-- release failed claim
-- list current items
+`TrashStore` must provide durable operations for intake, lookup, atomic claim for restore, atomic claim for destruction, complete restore, complete destruction, release failed claim, and list of current items.
 
 A production implementation must provide the durability/transaction guarantees required by the applicable Work_Disk persistence architecture. In-memory stores are test doubles only.
 
@@ -40,7 +31,7 @@ A production implementation must provide the durability/transaction guarantees r
 
 ## 5. Restore Boundary
 
-`TrashRestoreBoundary::restore(entry)` is responsible for reconstructing the authoritative resource from the preserved payload reference. BOT-05 does not serialize or recreate domain objects itself.
+`TrashRestoreBoundary::restore(entry)` reconstructs the authoritative resource from the preserved payload reference. BOT-05 does not serialize or recreate domain objects itself.
 
 On successful restore, BOT-05 completes the claimed trash transition. On failure, the item remains retained.
 
@@ -48,14 +39,14 @@ On successful restore, BOT-05 completes the claimed trash transition. On failure
 
 `TrashDestructionBoundary::destroy(entry)` is the only irreversible destruction boundary used by BOT-05.
 
-BOT-05 never deletes an arbitrary target directly. It only destroys a validated trash item that was atomically claimed from the trash store.
+BOT-05 never deletes an arbitrary target directly. It only destroys a validated Trash item that was atomically claimed from the Trash store.
 
 ## 7. Operations
 
 ### Intake
 
 1. Validate required identity, target and preservation references.
-2. Validate `deletedAt` and computed expiry.
+2. Calculate expiry through the retention policy.
 3. Persist the item through `TrashStore`.
 4. Report success only after durable intake succeeds.
 
@@ -72,35 +63,34 @@ BOT-05 never deletes an arbitrary target directly. It only destroys a validated 
 ### Delete One
 
 1. Validate authority and item identifier.
-2. Lookup the item.
-3. Atomically claim for destruction.
-4. Call the destruction boundary.
-5. Complete destruction only after the boundary succeeds.
-6. Release the claim on failure.
+2. Atomically claim for destruction.
+3. Call the destruction boundary.
+4. Complete destruction only after the boundary succeeds.
+5. Release the claim on failure.
 
 ### Empty Trash
 
 1. Validate authority.
-2. Obtain the current authoritative trash set through the store boundary.
+2. Obtain the current authoritative Trash set.
 3. Attempt destruction of each item using atomic claims.
 4. Complete each successful destruction.
-5. Report `Emptied` only when the authoritative store contains no remaining trash items for the operation scope.
-6. Report partial failure explicitly when one or more items remain.
+5. Report `Emptied` only when no current items remain.
+6. Report `PartiallyEmptied` when one or more items remain.
 
 ### Automatic Purge
 
-1. The scheduler supplies a trusted current time.
-2. BOT-05 lists eligible expired items.
+1. The scheduler supplies trusted current time.
+2. BOT-05 identifies expired items.
 3. Expired items cannot be restored.
-4. Each item is atomically claimed and destroyed.
+4. Each expired item is atomically claimed and destroyed.
 5. Failed items remain in Trash for a later retry.
+6. `NothingToPurge` means no expired item was eligible; it does **not** mean Trash is empty.
+7. `Purged` means expired items were successfully removed and no items remain after the purge operation.
+8. `PartiallyEmptied` means at least one eligible item or concurrent/current item remains.
 
 ## 8. Idempotency
 
-- Repeating intake with the same `itemId` must not create an ambiguous second lifecycle.
-- Repeating restore after successful restore returns an explicit already-restored/not-found result according to the store state.
-- Repeating delete-one after successful destruction returns an explicit already-destroyed/not-found result.
-- Repeating Empty Trash when already empty is a successful no-op only if the caller is authorised.
+Repeated lifecycle calls are resolved by the authoritative store state. A completed lifecycle cannot recreate an item merely because an old identifier is replayed. A production store may expose richer `AlreadyRestored`/`AlreadyDestroyed` states, but BOT-05 never treats a missing item as permission to recreate or destroy it.
 
 ## 9. Result Contract
 
@@ -115,9 +105,11 @@ BOT-05 never deletes an arbitrary target directly. It only destroys a validated 
 - `Expired`
 - `Emptied`
 - `PartiallyEmptied`
+- `Purged`
+- `NothingToPurge`
 - `Failed`
 
-Failures must distinguish invalid request, missing authority, storage failure, lifecycle conflict, restoration failure and destruction failure.
+Failures distinguish invalid request, missing authority, storage failure, lifecycle conflict, restoration failure, destruction failure and retention-policy failure.
 
 ## 10. Security Invariants
 
@@ -125,13 +117,13 @@ Failures must distinguish invalid request, missing authority, storage failure, l
 - An item ID is not authority.
 - An expired item cannot be restored.
 - A claimed item cannot be concurrently restored and destroyed.
-- BOT-05 cannot expand an Empty Trash scope beyond the authoritative trash store.
+- BOT-05 cannot expand an Empty Trash scope beyond the authoritative Trash store.
 - Payload references cannot be replaced by caller-supplied arbitrary payloads during restore.
 - Failed destruction does not remove the item from authoritative Trash state.
 
 ## 11. Tests
 
-Tests must cover intake, three-month policy injection, restore success/failure, restore-after-expiry, delete-one success/failure/idempotency, restore/destruction race claims, Empty Trash all-success, Empty Trash partial failure, purge retry, invalid authority, invalid identifiers, and preservation-reference validation.
+Tests must cover intake, policy injection, restore success/failure, restore-after-expiry, delete-one success/failure/idempotency, restore/destruction race claims, Empty Trash all-success, Empty Trash partial failure, purge with no eligible items, purge success, purge retry, invalid authority, invalid identifiers, and preservation-reference validation.
 
 ## 12. Completion Gate
 
