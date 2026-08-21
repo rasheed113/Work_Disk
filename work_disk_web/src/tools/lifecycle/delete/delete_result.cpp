@@ -13,94 +13,60 @@ DeleteResult::DeleteResult(
       outcome_(outcome),
       error_(error) {}
 
-DeleteResult DeleteResult::deleted(
-    std::string requestId
-) {
-    return DeleteResult(
-        std::move(requestId),
-        DeleteOutcome::Deleted,
-        DeleteError::None
-    );
+DeleteResult DeleteResult::deleted(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::Deleted, DeleteError::None);
 }
 
-DeleteResult DeleteResult::alreadyDeleted(
-    std::string requestId
-) {
-    return DeleteResult(
-        std::move(requestId),
-        DeleteOutcome::AlreadyDeleted,
-        DeleteError::None
-    );
+DeleteResult DeleteResult::alreadyDeleted(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::AlreadyDeleted, DeleteError::None);
 }
 
-DeleteResult DeleteResult::notFound(
-    std::string requestId
-) {
-    return DeleteResult(
-        std::move(requestId),
-        DeleteOutcome::NotFound,
-        DeleteError::None
-    );
+DeleteResult DeleteResult::notFound(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::NotFound, DeleteError::None);
 }
 
-DeleteResult DeleteResult::invalidRequest(
-    std::string requestId
-) {
-    return DeleteResult(
-        std::move(requestId),
-        DeleteOutcome::Failed,
-        DeleteError::InvalidRequest
-    );
+DeleteResult DeleteResult::pendingApproval(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::PendingApproval, DeleteError::ApprovalPending);
 }
 
-DeleteResult DeleteResult::missingAuthority(
-    std::string requestId
-) {
-    return DeleteResult(
-        std::move(requestId),
-        DeleteOutcome::Failed,
-        DeleteError::MissingAuthority
-    );
+DeleteResult DeleteResult::rejected(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::Rejected, DeleteError::ApprovalRejected);
 }
 
-DeleteResult DeleteResult::invalidTarget(
-    std::string requestId
-) {
-    return DeleteResult(
-        std::move(requestId),
-        DeleteOutcome::Failed,
-        DeleteError::InvalidTarget
-    );
+DeleteResult DeleteResult::invalidRequest(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::Failed, DeleteError::InvalidRequest);
 }
 
-DeleteResult DeleteResult::persistenceFailure(
-    std::string requestId
-) {
-    return DeleteResult(
-        std::move(requestId),
-        DeleteOutcome::Failed,
-        DeleteError::PersistenceFailure
-    );
+DeleteResult DeleteResult::missingAuthority(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::Failed, DeleteError::MissingAuthority);
 }
 
-DeleteResult DeleteResult::transactionFailure(
-    std::string requestId
-) {
-    return DeleteResult(
-        std::move(requestId),
-        DeleteOutcome::Failed,
-        DeleteError::TransactionFailure
-    );
+DeleteResult DeleteResult::invalidTarget(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::Failed, DeleteError::InvalidTarget);
 }
 
-DeleteResult DeleteResult::boundaryFailure(
-    std::string requestId
-) {
-    return DeleteResult(
-        std::move(requestId),
-        DeleteOutcome::Failed,
-        DeleteError::BoundaryFailure
-    );
+DeleteResult DeleteResult::approvalFailure(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::Failed, DeleteError::ApprovalFailure);
+}
+
+DeleteResult DeleteResult::pendingOperationFailure(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::Failed, DeleteError::PendingOperationFailure);
+}
+
+DeleteResult DeleteResult::pendingOperationConflict(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::Failed, DeleteError::PendingOperationConflict);
+}
+
+DeleteResult DeleteResult::persistenceFailure(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::Failed, DeleteError::PersistenceFailure);
+}
+
+DeleteResult DeleteResult::transactionFailure(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::Failed, DeleteError::TransactionFailure);
+}
+
+DeleteResult DeleteResult::boundaryFailure(std::string requestId) {
+    return DeleteResult(std::move(requestId), DeleteOutcome::Failed, DeleteError::BoundaryFailure);
 }
 
 DeleteOutcome DeleteResult::outcome() const noexcept {

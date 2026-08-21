@@ -5,198 +5,196 @@
 
 BOT-04 is the Delete Bot.
 
-BOT-04 provides a single, strictly bounded deletion execution boundary
-for Work_Disk.
+BOT-04 provides a strictly bounded deletion execution boundary for Work_Disk.
+It supports two execution paths:
 
-BOT-04 executes deletion only when the required upstream authority has
-already been established.
+1. **Normal Delete** — execute an already-authorised deletion immediately.
+2. **Approval-Gated Delete** — hold the requested deletion without deleting the target, request approval through the Warning & Approval Bot boundary, and commit or release the held operation from the authoritative approval result.
 
 The governing principle is:
 
-> Authority decides. Delete Bot executes.
+> Authority decides. Delete Bot controls the deletion lifecycle and executes only the authorised result.
 
-BOT-04 does not decide whether a resource should be deleted.
+BOT-04 does not decide whether a resource should be deleted or who is entitled to approve it.
 
-BOT-04 is not an Archive Bot, Trash Manager, Restore Handler, Filter,
-Sort, or universal cleanup/orchestration component.
+BOT-04 is not an Archive Bot, Trash Manager, Restore Handler, Mark Bot, Filter, Sort, or universal cleanup/orchestration component.
 
 ## 2. Core Invariants
 
 The following rules are non-negotiable:
 
-- BOT-04 only executes authorised deletion.
-- Authority remains outside BOT-04.
-- BOT-04 does not perform ownership or permission decisions.
-- Callers cannot select arbitrary deletion semantics.
-- Callers cannot independently expand cascade scope.
-- Fleet and Contractor approval remain outside BOT-04.
-- Missing or invalid authority means no deletion.
-- The same authorised deletion request must be safely idempotent.
-- BOT-04 must not report successful deletion before authoritative
-  deletion has completed.
+- BOT-04 only executes deletion within established authority.
+- BOT-04 does not create domain authority.
+- The authorised execution mode determines whether deletion is immediate or approval-gated; the mode is not hardcoded by BOT-04.
+- Normal deletion reaches the authoritative deletion boundary without an approval hold.
+- Approval-gated deletion never reaches the destructive execution boundary before approval.
+- A held target remains existing; hold means the deletion operation is pending, not that the target has already been deleted.
+- Approval acceptance commits the held deletion.
+- Approval rejection releases the hold; it does not recreate or paste back a deleted target because no deletion occurred while the operation was held.
+- The action-owning Delete Bot owns the pending deletion lifecycle; a separate Freeze Bot is not required for this lifecycle.
+- Warning & Approval Bot owns warning/approval decision generation, not deletion execution.
+- Approval evidence must be bound to the same deletion request before an approval decision can commit or release the held operation.
+- A pending operation has no expiry unless a future architecture explicitly introduces one.
+- Repeated initial calls for an already-held request must not create duplicate approval requests.
+- Repeated approved execution must remain safely idempotent.
+- If authoritative deletion fails after approval, the held operation must not be reported as completed merely because approval succeeded.
+- BOT-04 must not report successful deletion before authoritative deletion has completed.
 - Presentation expiry is never interpreted as deletion.
 - Protected historical or evidence data cannot be silently destroyed.
-- Archive, Trash, and Restore are outside BOT-04.
-- UI behaviour is outside BOT-04.
-- Domain business logic is outside BOT-04.
-- BOT-04 must not become a universal cleanup or orchestration engine.
+- Archive, Trash, Restore, Mark, and UI behaviour remain outside BOT-04.
 - Undefined destructive behaviour requires STOP; BOT-04 must not guess.
 
 ## 3. Authority Boundary
 
-The relevant domain or upstream authority determines whether deletion
-is permitted.
+The relevant domain or upstream authority establishes whether deletion is permitted and whether approval is required.
 
-BOT-04 receives an authorised deletion operation only after the required
-authority has been established.
-
-BOT-04 must not:
+BOT-04 consumes that established authority context and follows the declared execution mode. It must not:
 
 - invent authority
 - grant authority
 - bypass authority
 - weaken approval requirements
 - replace domain authority
+- choose an approver
+- decide an approval outcome
 - perform ownership decisions
 - perform permission decisions
 
-## 4. Fleet Deletion Boundary
+## 4. Approval Boundary
 
-Fleet-specific approval remains outside BOT-04.
+BOT-04 may call the Warning & Approval Bot only through an explicit approval boundary.
 
-Where the Fleet architecture requires Contractor approval, that approval
-must be established by the appropriate upstream authority before BOT-04
-receives the deletion operation.
+The Warning & Approval Bot is responsible for:
 
-If the required approval is absent, invalid, expired, or rejected,
-BOT-04 must not perform the deletion.
+- creating the warning
+- requesting the approval decision through its own notification workflow
+- returning the authoritative positive or negative approval result
 
-BOT-04 does not own Fleet authority or Contractor authority.
+BOT-04 is responsible for:
 
-## 5. Conceptual Input Contract
+- holding the deletion before approval
+- preventing destructive execution while approval is pending
+- accepting the authoritative approval evidence
+- committing deletion after approval
+- releasing the held deletion after rejection
 
-The deletion operation requires, at minimum:
+BOT-04 must not manufacture an approval result.
 
-- A unique request identifier.
-- A target type.
-- A target identifier.
-- An authoritative authorisation reference.
+## 5. Fleet Boundary
+
+Fleet-specific approval remains a domain policy decision.
+
+If a Fleet deletion is marked approval-required by the applicable authoritative policy, BOT-04 uses the approval-gated path. The Contractor/Fleet domain remains responsible for determining the required authority and approver.
+
+The Delete Bot must not hardcode Fleet-specific approval logic.
+
+## 6. Conceptual Request Contract
+
+A deletion request requires:
+
+- unique request identity
+- target type
+- target identifier
+- authoritative authority reference
+- execution mode
+- approval decision state
+- approval evidence when a positive or negative approval decision is being applied
 
 Conceptual shape:
 
-    {
-      "request_id": "uuid-v4",
-      "target_type": "string_entity_identifier",
-      "target_id": "string_or_number_identifier",
-      "authorisation_reference": {
-        "authority_reference": "string_reference",
-        "approval_evidence": "context_or_reference"
-      }
-    }
+```text
+DeleteRequest
+├── requestId
+├── targetType
+├── targetId
+├── executionMode
+│   ├── Immediate
+│   └── ApprovalRequired
+├── approvalDecision
+│   ├── None
+│   ├── Pending
+│   ├── Approved
+│   └── Rejected
+└── authority
+    ├── authorityReference
+    └── approvalEvidence
+```
 
-The exact representation of authority evidence is an implementation
-contract decision.
+The exact representation of authority and approval evidence is an implementation contract decision. BOT-04 must not assume a particular cryptographic or transport mechanism unless separately authorised.
 
-BOT-04 must not assume that authority evidence must use one specific
-technical mechanism unless separately authorised.
+## 7. Hold Semantics
 
-## 6. No Caller-Controlled Deletion Semantics
+For an approval-required request, the target remains authoritative and existing.
 
-The caller must not arbitrarily select destructive behaviour through
-raw flags such as:
+The held state means:
 
-- hard_delete
-- soft_delete
-- purge
-- tombstone
+> **Deletion requested, deletion not yet executed, approval pending.**
 
-Deletion semantics are determined by the authorised target/domain
-contract.
+Freeze/hold is therefore a property of the deletion operation, not a deletion of the target.
 
-BOT-04 executes the semantics that have been authorised.
+BOT-04 owns this lifecycle through its pending-operation boundary.
 
-## 7. No Caller-Controlled Cascade
+## 8. Execution Lifecycle
 
-The caller must not independently expand deletion scope through an
-arbitrary cascade flag.
+### Normal
 
-Any cascading behaviour must be defined by the authorised target/domain
-deletion contract.
+```text
+Request
+  → validate authority/context
+  → authoritative deletion execution
+  → result
+```
 
-BOT-04 must not invent additional deletion targets.
+### Approval-Gated
 
-## 8. Deletion Execution
+```text
+Request
+  → validate authority/context
+  → hold pending deletion
+  → Warning & Approval Bot
+  → Pending
+       ↓
+   Approved → commit deletion → complete held operation
+       ↓
+   Rejected → release held operation → target remains
+```
 
-BOT-04 executes only the deletion operation contained within the
-authorised scope.
-
-An identifier by itself is never sufficient authority for destructive
-action.
-
-BOT-04 must not perform unrelated domain operations as a side effect of
-receiving a deletion request.
+Approval success is not itself deletion success. The authoritative deletion boundary must still complete successfully.
 
 ## 9. Idempotency
 
-Retrying the same authorised deletion request must be safely idempotent.
+The same request identifier represents the same deletion operation.
 
-A repeated request must not cause repeated destructive effects.
+- Repeating the initial approval-gated request while already held must not create another approval request.
+- Repeating an approved request must not cause repeated destructive effects.
+- Replaying an approval result against a missing or incompatible pending operation must be rejected.
+- Idempotency must never weaken authority or approval-evidence checks.
 
-Where the target has already been authoritatively deleted, the operation
-may return an appropriate already-deleted result according to the public
-result contract.
+## 10. Failure & Safety
 
-Idempotency must not weaken the authority requirement.
+Malformed requests, missing authority, invalid targets, invalid approval evidence, pending-operation conflicts, approval failures, and authoritative execution failures must be explicit.
 
-## 10. Success Guarantee
-
-BOT-04 must not report successful deletion unless the authoritative
-deletion operation has completed according to the applicable persistence
-contract.
-
-A request that fails before authoritative completion must not be reported
-as successfully deleted.
-
-## 11. Failure & Safety
-
-Malformed targets must be rejected.
-
-Missing, invalid, expired, or rejected authority must result in no
-deletion.
-
-If the authorised deletion cannot be completed, BOT-04 must return an
-explicit failure according to its result contract.
-
-BOT-04 must not silently convert an execution failure into success.
+If approval infrastructure fails, the held operation remains unresolved rather than being silently deleted or silently released.
 
 Undefined destructive behaviour requires:
 
 > STOP — do not guess.
 
-## 12. Atomicity Boundary
+## 11. Atomicity Boundary
 
-BOT-04 must respect the atomicity guarantees of the authoritative
-persistence layer.
+BOT-04 must respect the atomicity guarantees of the authoritative persistence layer.
 
-It must not claim a universal distributed rollback guarantee across
-independent physical systems unless such a guarantee is explicitly
-provided by the applicable architecture.
+The hold state and its approval lifecycle must be persisted through the pending-operation boundary where durable state is required. BOT-04 must not claim universal rollback across independent systems unless the architecture explicitly provides it.
 
-The authoritative deletion result is the basis for reporting success.
+## 12. Preservation Boundary
 
-## 13. Preservation Boundary
+Approval rejection does not require reconstruction of the target because the target was never deleted while held.
 
-BOT-04 must respect preservation requirements established by the
-authoritative domain architecture.
-
-Protected historical or evidence records must not be silently destroyed.
-
-Daily, weekly, and monthly presentation-window expiry does not constitute
-deletion.
+Protected historical/evidence records remain subject to their domain preservation rules.
 
 Presentation cleanup or projection reset is outside BOT-04.
 
-## 14. Domain Separation
+## 13. Domain Separation
 
 BOT-04 does not own:
 
@@ -204,60 +202,49 @@ BOT-04 does not own:
 - Identity authority
 - Fleet authority
 - Contractor authority
-- Social ownership
-- Privacy authority
-- Authentication
-- Permissions
-- Business-domain rules
-- Presentation lifecycle
+- Approval policy
+- Notification delivery
+- Mark/selection state
 - Archive lifecycle
 - Trash lifecycle
 - Restore lifecycle
+- Permissions
+- UI behaviour
+- Domain business rules
 
-## 15. Explicit Non-Responsibilities
+## 14. Explicit Non-Responsibilities
 
 BOT-04 does not:
 
-- decide whether deletion is permitted
-- check user ownership
-- perform permission evaluation
-- manage UI confirmation
-- manage Archive
-- manage Trash
-- manage Restore
-- interpret presentation expiry as deletion
+- decide whether approval is required
+- choose the approver
+- generate approval outcomes
+- send notifications directly
+- perform ownership decisions
 - invent cascade behaviour
-- dispatch unrelated notifications
+- implement Mark or Mark All
+- become Delete All orchestration outside an authorised domain scope
 - become a universal cleanup engine
 - become a general orchestration engine
 
-## 16. Security Boundary
-
-Deletion is a privileged destructive operation.
+## 15. Security Boundary
 
 Calling BOT-04 does not grant deletion authority.
 
-BOT-04 executes established authority; it does not establish authority.
+No destructive execution may occur unless the request has the required authority and, for approval-gated operations, authoritative approval evidence.
 
-The deletion boundary must reject requests that cannot demonstrate the
-required upstream authority.
+A valid approval result cannot expand the target scope beyond the original authorised deletion request.
 
-## 17. Architectural Boundary
+## 16. Public Boundary
 
-BOT-04 is a Delete Bot only.
+Consumers interact through the Delete Bot public contract.
 
-Its responsibility ends at authorised deletion execution and its directly
-required execution result.
+Internal persistence, pending-operation storage, approval transport, and authoritative deletion mechanisms remain implementation details behind their respective boundaries.
 
-Any capability outside this boundary requires a separate architectural
-decision and must not be silently added to BOT-04.
+## 17. Principle
 
-## 18. Principle
+BOT-04 follows this rule:
 
-BOT-04 follows one fundamental rule:
+> **Normal action executes normally. Approval-required action is held by the action-owning bot until an authoritative approval decision commits or releases it.**
 
-> Delete only what the authorised domain has permitted to be deleted.
-
-Domain authority decides.
-
-BOT-04 executes.
+Domain authority decides. Warning & Approval Bot decides approval. Delete Bot owns the deletion lifecycle and executes.
