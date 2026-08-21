@@ -51,12 +51,14 @@
 - Document preview / conversion — **IMPLEMENTED**
 - Internationalisation / translation capability — **IMPLEMENTED**
 
-## 5. Dashboard — Architecture Phase
-- Dashboard architecture attack — **DESIGNED**
-- Dashboard boundary map — **DESIGNED**
-- Dashboard component blueprint — **DESIGNED**
-- Dashboard implementation contract — **DESIGNED**
-- Dashboard implementation/tests — **PLANNED**
+## 5. Dashboard — Runtime Vertical Slice
+- Dashboard architecture attack — **IMPLEMENTED/DOCUMENTED**
+- Dashboard boundary map — **IMPLEMENTED/DOCUMENTED**
+- Dashboard component blueprint — **IMPLEMENTED/DOCUMENTED**
+- Dashboard implementation contract — **IMPLEMENTED/DOCUMENTED**
+- Dashboard runtime vertical slice — **IMPLEMENTED**
+- Dashboard runtime tests — **IMPLEMENTED**
+- Dashboard runtime documentation — **IMPLEMENTED**
 
 ### Locked dashboard baseline
 1. Dashboard Shell
@@ -74,33 +76,36 @@
 
 Customisation includes hide/unhide, add/remove from dashboard, pin/unpin, reorder and reset-to-default. Dashboard component deletion is not a customisation operation.
 
-## 6. Presentation Stack — Architecture & Contract Phase
-- Repository presentation-stack audit — **DESIGNED**
-- Presentation architecture attack — **DESIGNED**
-- Presentation boundary — **DESIGNED**
-- Presentation blueprint — **DESIGNED**
-- Presentation implementation contract — **DESIGNED / SEALED**
-- Presentation implementation roadmap — **DESIGNED**
-- Selected foundation: React + TypeScript + Vite + React Router + standards-based CSS/design tokens — **DESIGNED**
-- Presentation runtime implementation — **PLANNED**
+## 6. Presentation Stack — Runtime Foundation
+- Repository presentation-stack audit — **IMPLEMENTED/DOCUMENTED**
+- Presentation architecture attack — **IMPLEMENTED/DOCUMENTED**
+- Presentation boundary — **IMPLEMENTED/DOCUMENTED**
+- Presentation blueprint — **IMPLEMENTED/DOCUMENTED**
+- Presentation implementation contract — **IMPLEMENTED/DOCUMENTED / SEALED**
+- Presentation implementation roadmap — **IMPLEMENTED/DOCUMENTED**
+- Selected foundation: React + TypeScript + Vite + React Router + standards-based CSS/design tokens — **IMPLEMENTED**
+- Presentation runtime foundation — **IMPLEMENTED**
+- Dashboard runtime vertical slice — **IMPLEMENTED**
 
-The selected presentation stack is a UI foundation only. Domain ownership remains in Work_Disk services/contracts. Runtime implementation is not claimed until the presentation implementation gates are completed.
+The presentation stack remains a UI foundation. Domain ownership remains in Work_Disk services/contracts. No domain database access is performed by Dashboard components.
 
 ## 7. Documentation Areas
 - Account documentation — **IMPLEMENTED**
 - Profile documentation — **IMPLEMENTED**
 - Tool documentation — **IMPLEMENTED**
 - Master Menu — **IMPLEMENTED**
-- Dashboard architecture documentation — **DESIGNED**
-- Presentation stack architecture documentation — **DESIGNED**
+- Dashboard architecture documentation — **IMPLEMENTED**
+- Dashboard runtime documentation — **IMPLEMENTED**
+- Presentation stack architecture documentation — **IMPLEMENTED**
 
 ## 8. Current Audit Notes
 - This menu is an inventory, not a replacement for individual architecture contracts.
 - A feature must not be marked IMPLEMENTED merely because it was discussed or designed.
 - Duplicate or overlapping capabilities must be resolved at the architecture/boundary level before adding another Tool-Bot.
 - CI is not marked PASS unless an actual workflow run is observed.
-- Runtime dashboard implementation is not claimed until the repository's actual web presentation stack is implemented and verified.
-- The presentation stack is not itself a domain authority and must communicate through explicit service contracts/adapters.
+- Dashboard runtime is implemented as a presentation vertical slice with domain-neutral typed inputs and empty states when authoritative data is unavailable.
+- Dashboard personalisation never deletes a feature or its domain data.
+- The presentation stack is not itself a domain authority and communicates through explicit service contracts/adapters.
 
 ## 9. Update Rule
 Every future addition follows:
@@ -112,8 +117,11 @@ The Master Menu answers:
 > **What does Work_Disk actually have right now?**
 
 ## 10. Change Log
+### v1.4 — Dashboard runtime vertical slice
+Recorded the implemented Dashboard runtime, twelve locked component boundaries, non-destructive customisation, Cards Gallery, tests and runtime documentation.
+
 ### v1.3 — Presentation boundary, blueprint, contract and roadmap
-Recorded the presentation boundary, implementation blueprint, sealed contract and incremental roadmap. Runtime implementation remains explicitly unclaimed.
+Recorded the presentation boundary, implementation blueprint, sealed contract and incremental roadmap.
 
 ### v1.2 — Presentation stack architecture phase
 Recorded the repository presentation-stack audit and the selected React + TypeScript + Vite + React Router foundation.

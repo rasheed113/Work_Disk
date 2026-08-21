@@ -1,0 +1,24 @@
+.wd-dashboard-shell { min-height: 100vh; padding: 1rem; background: var(--wd-dashboard-bg, #f6f8fb); color: #172033; }
+.wd-dashboard-header { display:flex; justify-content:space-between; gap:1rem; align-items:center; padding:1rem 1.25rem; background:#fff; border-radius:1rem; box-shadow:0 0.25rem 1rem rgba(23,32,51,.08); }
+.wd-dashboard-header strong, .wd-dashboard-header span { display:block; }
+.wd-dashboard-context { font-size:.9rem; opacity:.75; }
+.wd-dashboard-nav { margin:1rem 0; padding:0; list-style:none; display:flex; gap:.75rem; flex-wrap:wrap; }
+.wd-dashboard-nav a { color:inherit; text-decoration:none; }
+.wd-dashboard-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap:1rem; }
+.wd-dashboard-card { background:#fff; border:1px solid #e3e8f0; border-radius:1rem; overflow:hidden; box-shadow:0 .2rem .8rem rgba(23,32,51,.05); }
+.wd-dashboard-card__header { display:flex; justify-content:space-between; gap:.75rem; align-items:center; padding:.85rem 1rem; border-bottom:1px solid #edf0f5; }
+.wd-dashboard-card__header h2 { margin:0; font-size:1rem; }
+.wd-dashboard-card__controls { display:flex; gap:.35rem; flex-wrap:wrap; }
+.wd-dashboard-card button, .wd-action-list button, .wd-customisation button, .wd-gallery button { min-height:2.25rem; padding:.4rem .7rem; border:1px solid #ccd4e0; border-radius:.55rem; background:#fff; color:inherit; cursor:pointer; }
+.wd-dashboard-card__body { padding:1rem; }
+.wd-dashboard-ticker { padding:.75rem; border-radius:.6rem; background:#eef3f8; }
+.wd-summary-grid, .wd-capability-grid, .wd-gallery { display:grid; gap:.75rem; }
+.wd-summary-grid { grid-template-columns:repeat(auto-fit,minmax(8rem,1fr)); }
+.wd-summary-grid div, .wd-capability-grid article, .wd-gallery article { padding:.75rem; border:1px solid #e3e8f0; border-radius:.7rem; }
+.wd-summary-grid span { display:block; font-size:.8rem; opacity:.7; }
+.wd-summary-grid strong { font-size:1.35rem; }
+.wd-capability-grid, .wd-gallery { grid-template-columns:repeat(auto-fit,minmax(10rem,1fr)); }
+.wd-action-list, .wd-customisation-list { display:flex; gap:.5rem; flex-wrap:wrap; }
+.wd-customisation-list > div { width:100%; display:flex; gap:.5rem; align-items:center; justify-content:space-between; }
+.wd-customisation-list span { margin-right:auto; }
+@media (max-width: 640px) { .wd-dashboard-shell { padding:.65rem; } .wd-dashboard-header { align-items:flex-start; flex-direction:column; } }
