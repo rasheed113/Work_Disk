@@ -1,0 +1,2 @@
+# BOT-45 — Feed Tool
+Reusable authorised feed-intent boundary. Provider owns ranking, eligibility, pagination, freshness and persistence. Attacks: scope escape, ranking manipulation, cross-account leakage, deleted-content resurfacing, stale cursor, replay, duplicate content, privacy bypass, hidden profiling, provider failure, starvation, UI coupling, policy leakage, timing leakage, authority spoofing, persistence leakage, boundary drift.
