@@ -1,0 +1,3 @@
+#pragma once
+#include <string>
+namespace work_disk::tools::bot60 { enum class Operation{Preview,Convert}; struct Request{std::string request_id,caller_context,document_reference,target_format;Operation operation;}; struct Result{bool accepted{false};std::string output_reference;}; class Provider{public:virtual~Provider()=default;virtual Result preview(const Request&)=0;virtual Result convert(const Request&)=0;}; Result execute(const Request&,Provider&); }
