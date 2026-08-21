@@ -1,0 +1,2 @@
+# BOT-44 — Relationship Tool
+Authorised relationship-intent boundary for social and domain relationships. Provider owns relationship policy, privacy, lifecycle and persistence. Attacks: actor spoofing, subject substitution, relationship escalation, cross-account leakage, stale relationship, replay, duplicate mutation, privacy bypass, policy confusion, provider failure, hidden authority grant, UI coupling, persistence leakage, scope escape, deletion race, timing leakage, boundary drift.
