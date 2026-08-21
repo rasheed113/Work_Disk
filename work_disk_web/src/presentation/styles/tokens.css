@@ -1,0 +1,18 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #f6f8fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+:root {
+  --wd-space-1: 0.25rem;
+  --wd-space-2: 0.5rem;
+  --wd-space-3: 0.75rem;
+  --wd-space-4: 1rem;
+  --wd-space-6: 1.5rem;
+  --wd-radius-sm: 0.5rem;
+  --wd-radius-md: 0.75rem;
+  --wd-radius-lg: 1rem;
+}
