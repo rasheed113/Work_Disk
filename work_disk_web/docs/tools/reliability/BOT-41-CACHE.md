@@ -1,0 +1,2 @@
+# BOT-41 — Cache Tool
+Provider-backed cache intent boundary. Provider owns storage, TTL, invalidation consistency and encryption. Attacks: stale data, cross-account leakage, key substitution, replay, invalidation race, cache poisoning, authority spoofing, eviction policy leakage, persistence leakage, provider failure, timing leakage, UI coupling, scope escalation, deleted-data resurfacing, duplicate mutation, policy bypass, boundary drift.
