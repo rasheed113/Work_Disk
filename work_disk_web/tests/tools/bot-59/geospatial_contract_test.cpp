@@ -1,0 +1,3 @@
+#include "../../../src/tools/bot-59/geospatial/geospatial.h"
+#include <cassert>
+using namespace work_disk::tools::bot59; struct P:Provider{int n=0;Result resolve(const Request&){++n;return{true,"r"};}Result distance(const Request&){++n;return{true,"d"};}}; int main(){P p;Request r{"1","c","loc","",Operation::Resolve};assert(execute(r,p).accepted);r.operation=Operation::Distance;assert(!execute(r,p).accepted&&p.n==1);}
