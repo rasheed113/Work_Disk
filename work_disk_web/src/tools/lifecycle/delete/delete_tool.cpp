@@ -55,7 +55,7 @@ DeleteResult DeleteTool::execute(
         const auto approvalResult =
             approvalBoundary_.requestApproval(request);
 
-        if (approvalResult.failureCode != nullptr) {
+        if (approvalResult.failed) {
             return DeleteResult::approvalFailure(request.requestId);
         }
 
@@ -64,8 +64,7 @@ DeleteResult DeleteTool::execute(
                 return DeleteResult::pendingApproval(request.requestId);
 
             case DeleteApprovalDecision::Approved: {
-                if (approvalResult.approvalEvidence == nullptr ||
-                    *approvalResult.approvalEvidence == '\0') {
+                if (approvalResult.approvalEvidence.empty()) {
                     return DeleteResult::approvalFailure(request.requestId);
                 }
 
@@ -77,8 +76,7 @@ DeleteResult DeleteTool::execute(
             }
 
             case DeleteApprovalDecision::Rejected: {
-                if (approvalResult.approvalEvidence == nullptr ||
-                    *approvalResult.approvalEvidence == '\0') {
+                if (approvalResult.approvalEvidence.empty()) {
                     return DeleteResult::approvalFailure(request.requestId);
                 }
 
