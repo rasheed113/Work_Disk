@@ -9,6 +9,12 @@ enum class DeleteError {
     MissingAuthority,
     InvalidTarget,
 
+    ApprovalPending,
+    ApprovalRejected,
+    ApprovalFailure,
+    PendingOperationFailure,
+    PendingOperationConflict,
+
     PersistenceFailure,
     TransactionFailure,
     BoundaryFailure
