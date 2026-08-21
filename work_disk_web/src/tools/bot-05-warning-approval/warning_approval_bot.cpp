@@ -48,8 +48,18 @@ WarningApprovalResult WarningApprovalBot::createWarning(
 
     if (result.createStatus == ApprovalCreateStatus::AlreadyExists) {
         ApprovalState existing;
-        if (store_.find(request.approvalRequestId, existing)) {
-            result.state = existing;
+        if (!store_.find(request.approvalRequestId, existing)) {
+            result.createStatus = ApprovalCreateStatus::StoreFailure;
+            return result;
+        }
+
+        result.state = existing;
+
+        // Notification delivery is transport and may be retried safely when
+        // the notification layer itself provides request-id idempotency.
+        if (existing.decision == ApprovalDecision::Pending &&
+            !notification_.sendApprovalRequest(existing.request)) {
+            result.createStatus = ApprovalCreateStatus::NotificationFailure;
         }
         return result;
     }
@@ -60,6 +70,8 @@ WarningApprovalResult WarningApprovalBot::createWarning(
 
     if (!notification_.sendApprovalRequest(request)) {
         result.createStatus = ApprovalCreateStatus::NotificationFailure;
+        result.state.request = request;
+        result.state.decision = ApprovalDecision::Pending;
         return result;
     }
 
@@ -85,13 +97,17 @@ WarningApprovalResult WarningApprovalBot::receiveDecision(
     switch (result.decisionStatus) {
         case ApprovalDecisionStatus::Approved:
         case ApprovalDecisionStatus::Rejected:
+        case ApprovalDecisionStatus::IdempotentApproved:
+        case ApprovalDecisionStatus::IdempotentRejected:
+            // A committed terminal decision is never rolled back because a
+            // consumer is temporarily unavailable. Re-delivery is safe because
+            // the decision is immutable and the action consumer must be
+            // idempotent for the same approvalRequestId.
             if (!decisionConsumer_.deliverDecision(committed)) {
                 result.decisionStatus = ApprovalDecisionStatus::DispatchFailure;
             }
             return result;
 
-        case ApprovalDecisionStatus::IdempotentApproved:
-        case ApprovalDecisionStatus::IdempotentRejected:
         case ApprovalDecisionStatus::UnknownRequest:
         case ApprovalDecisionStatus::InvalidDecision:
         case ApprovalDecisionStatus::ApproverMismatch:
@@ -112,7 +128,7 @@ WarningApprovalResult WarningApprovalBot::query(
     WarningApprovalResult result;
     ApprovalState state;
 
-    if (!store_.find(approvalRequestId, state)) {
+    if (approvalRequestId.empty() || !store_.find(approvalRequestId, state)) {
         result.queryStatus = ApprovalQueryStatus::UnknownRequest;
         return result;
     }
