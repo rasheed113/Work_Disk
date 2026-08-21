@@ -4,6 +4,25 @@
 
 namespace work_disk::tools::bot05 {
 
+class CallerAuthorizationBoundary {
+public:
+    virtual ~CallerAuthorizationBoundary() = default;
+
+    virtual bool authorizeCaller(
+        const ApprovalRequest& request
+    ) const = 0;
+};
+
+class DecisionAuthenticationBoundary {
+public:
+    virtual ~DecisionAuthenticationBoundary() = default;
+
+    virtual bool authenticateDecision(
+        const ApprovalDecisionInput& input,
+        const ApprovalState& requestState
+    ) const = 0;
+};
+
 class ApprovalStore {
 public:
     virtual ~ApprovalStore() = default;
