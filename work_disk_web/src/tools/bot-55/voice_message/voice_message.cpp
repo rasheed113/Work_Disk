@@ -1,0 +1,2 @@
+#include "voice_message.h"
+namespace work_disk::tools::bot55 { Result execute(const Request& r, Provider& p){ if(r.request_id.empty()||r.caller_context.empty()||r.media_reference.empty()) return {}; return p.send(r); } }
