@@ -1,0 +1,2 @@
+#include "share_tool.h"
+namespace work_disk::tools::share { ShareResult ShareTool::share(const ShareRequest& r) const { if(r.request_id.empty()||r.authority_reference.empty()||r.actor_reference.empty()||r.target_reference.empty()||r.destination_reference.empty()||r.mode.empty()) return {false,"InvalidRequest"}; std::string e; if(!p_.share(r,e)) return {false,e.empty()?"Rejected":e}; return {true,{}}; } }
