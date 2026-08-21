@@ -1,0 +1,2 @@
+# BOT-42 — Export Tool
+Authorised export-intent boundary. Provider owns serialization, filtering, redaction, encryption and storage. Attacks: scope escape, authority spoofing, privacy leakage, data substitution, stale export, replay, format confusion, redaction bypass, cross-account leakage, provider failure, large-export exhaustion, UI coupling, persistence leakage, hidden mutation, policy bypass, timing leakage, boundary drift.
