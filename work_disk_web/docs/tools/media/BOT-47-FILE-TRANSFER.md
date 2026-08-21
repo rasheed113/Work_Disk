@@ -1,0 +1,2 @@
+# BOT-47 — File Transfer Tool
+Authorised file transfer-intent boundary. Provider owns storage, transport, encryption, chunking and retention. Attacks: scope escape, path substitution, authority spoofing, traversal, upload poisoning, download leakage, replay, partial transfer, duplicate transfer, provider failure, encryption bypass, metadata leakage, stale grants, UI coupling, persistence leakage, exhaustion, boundary drift.
