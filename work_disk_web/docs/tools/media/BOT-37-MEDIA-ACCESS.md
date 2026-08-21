@@ -1,0 +1,2 @@
+# BOT-37 — Media Access Tool
+Reusable authorised media-access intent boundary. Provider owns storage, transcoding, retention, privacy and delivery. Attacks: authority spoofing, media substitution, cross-account leakage, path traversal, replay, stale grants, privacy leakage, provider failure, retention bypass, UI coupling, scope escalation, duplicate access, revoked access reuse, metadata leakage, payload tampering, persistence leakage, boundary drift. Contract validates request/authority/actor/media references before delegation.
