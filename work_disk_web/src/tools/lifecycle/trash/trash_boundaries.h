@@ -11,6 +11,7 @@ enum class TrashClaimResult {
     Claimed,
     NotFound,
     Conflict,
+    Expired,
     StorageFailure
 };
 
@@ -20,8 +21,10 @@ public:
 
     virtual bool put(const TrashEntry& entry) = 0;
     virtual bool find(const std::string& itemId, TrashEntry& entry) const = 0;
+    // list() represents all non-terminal Trash items, including atomically claimed items.
     virtual std::vector<TrashEntry> list() const = 0;
-    virtual TrashClaimResult claimForRestore(const std::string& itemId, TrashEntry& entry) = 0;
+    // The production store must re-check expiry atomically with the restore claim.
+    virtual TrashClaimResult claimForRestore(const std::string& itemId, TrashTime now, TrashEntry& entry) = 0;
     virtual TrashClaimResult claimForDestruction(const std::string& itemId, TrashEntry& entry) = 0;
     virtual bool completeRestore(const std::string& itemId) = 0;
     virtual bool completeDestruction(const std::string& itemId) = 0;
