@@ -15,6 +15,7 @@ enum class ApprovalCreateStatus {
     AlreadyExists,
     InvalidRequest,
     UnauthorisedCaller,
+    RequestContextMismatch,
     StoreFailure,
     NotificationFailure
 };
@@ -51,7 +52,6 @@ struct ApprovalRequest {
     std::string approverId;
     std::string warningMessage;
     std::string decisionConsumerId;
-    // Opaque caller-generated fingerprint of the exact approved action context.
     std::string actionFingerprint;
 };
 
@@ -60,7 +60,6 @@ struct ApprovalDecisionInput {
     std::string approverId;
     ApprovalDecision decision = ApprovalDecision::Pending;
     std::string authenticatedDecisionReference;
-    // Must match the immutable request fingerprint.
     std::string actionFingerprint;
 };
 
