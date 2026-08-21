@@ -1,0 +1,1 @@
+export function List<T>({items,renderItem}:{items:readonly T[];renderItem:(item:T,index:number)=>React.ReactNode}){return <ul>{items.map((item,index)=><li key={index}>{renderItem(item,index)}</li>)}</ul>}
