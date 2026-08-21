@@ -1,0 +1,1 @@
+export function Filter({active,onChange,label='Filter'}:{active:boolean;onChange:(value:boolean)=>void;label?:string}){return <button type="button" aria-pressed={active} onClick={()=>onChange(!active)}>{label}</button>}
