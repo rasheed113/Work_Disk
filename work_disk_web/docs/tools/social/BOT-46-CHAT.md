@@ -1,0 +1,2 @@
+# BOT-46 — Chat Tool
+Authorised chat-intent boundary. Provider owns message persistence, delivery, moderation, encryption and conversation policy. Attacks: recipient substitution, conversation escape, replay, duplicate send, withdrawn-message confusion, privacy leakage, authority spoofing, moderation bypass, provider failure, ordering conflict, attachment substitution, UI coupling, persistence leakage, timing leakage, scope escalation, deleted-content resurfacing, boundary drift.
