@@ -1,0 +1,1 @@
+export function Toggle({checked,onChange,label}:{checked:boolean;onChange:(value:boolean)=>void;label:string}){return <label><input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)}/>{label}</label>}
