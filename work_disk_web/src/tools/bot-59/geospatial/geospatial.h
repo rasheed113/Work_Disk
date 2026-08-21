@@ -1,0 +1,3 @@
+#pragma once
+#include <string>
+namespace work_disk::tools::bot59 { enum class Operation{Resolve,Distance}; struct Request{std::string request_id,caller_context,location_reference,target_reference;Operation operation;}; struct Result{bool accepted{false};std::string result_reference;}; class Provider{public:virtual~Provider()=default;virtual Result resolve(const Request&)=0;virtual Result distance(const Request&)=0;}; Result execute(const Request&,Provider&); }
