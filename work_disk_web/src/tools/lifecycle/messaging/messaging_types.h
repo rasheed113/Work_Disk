@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 namespace work_disk::tools::messaging {
-enum class Operation { Send, Reply, Edit, Delete };
+enum class Operation { Send, Reply };
 enum class ResultCode { Accepted, InvalidRequest, AuthorityRejected };
 struct MessageCommand { std::string request_id; std::string authority_reference; std::string conversation_scope_reference; std::string actor_reference; std::string target_reference; std::string content_reference; std::string idempotency_key; std::string expected_version; Operation operation; };
 struct MessageResult { ResultCode code; std::string message_reference; };
