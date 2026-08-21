@@ -1,0 +1,2 @@
+#include "geospatial.h"
+namespace work_disk::tools::bot59 { Result execute(const Request&r,Provider&p){if(r.request_id.empty()||r.caller_context.empty()||r.location_reference.empty())return{};if(r.operation==Operation::Distance&&r.target_reference.empty())return{};return r.operation==Operation::Resolve?p.resolve(r):p.distance(r);} }
