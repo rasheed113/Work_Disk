@@ -6,6 +6,22 @@
 
 using namespace work_disk::tools::bot05;
 
+class CallerAuth final : public CallerAuthorizationBoundary {
+public:
+    bool authorizeCaller(const ApprovalRequest&) const override { return true; }
+};
+
+class DecisionAuth final : public DecisionAuthenticationBoundary {
+public:
+    bool authenticateDecision(
+        const ApprovalDecisionInput& input,
+        const ApprovalState& state
+    ) const override {
+        return input.approverId == state.request.approverId &&
+               !input.authenticatedDecisionReference.empty();
+    }
+};
+
 class Store final : public ApprovalStore {
 public:
     ApprovalCreateStatus createPending(const ApprovalRequest& request) override {
@@ -35,6 +51,9 @@ public:
         state = it->second;
         if (state.request.approverId != input.approverId) {
             return ApprovalDecisionStatus::ApproverMismatch;
+        }
+        if (state.request.actionFingerprint != input.actionFingerprint) {
+            return ApprovalDecisionStatus::RequestContextMismatch;
         }
         if (state.decision != ApprovalDecision::Pending) {
             return state.decision == input.decision
@@ -77,9 +96,17 @@ public:
 
 int main() {
     Store store;
+    CallerAuth callerAuth;
+    DecisionAuth decisionAuth;
     Notification notification;
     ActionConsumer consumer;
-    WarningApprovalBot bot(store, notification, consumer);
+    WarningApprovalBot bot(
+        store,
+        callerAuth,
+        decisionAuth,
+        notification,
+        consumer
+    );
 
     const ApprovalRequest request{
         "APR-FLEET-001",
@@ -89,7 +116,8 @@ int main() {
         "ENTRY-123",
         "CONTRACTOR-77",
         "Fleet entry deletion requires contractor approval.",
-        "FREEZE-BOT-DECISION-ROUTE"
+        "FREEZE-BOT-DECISION-ROUTE",
+        "sha256:delete-fleet-entry-123"
     };
 
     const auto created = bot.createWarning(request);
@@ -97,19 +125,19 @@ int main() {
     assert(created.state.decision == ApprovalDecision::Pending);
     assert(consumer.calls == 0);
 
-    // The warning has not executed the delete and has not called Freeze Bot.
-    // Only the decision consumer receives the eventual signal.
+    // Warning creation does not execute the delete and does not call Freeze Bot.
     const auto rejected = bot.receiveDecision({
         "APR-FLEET-001",
         "CONTRACTOR-77",
         ApprovalDecision::Rejected,
-        "SIGNED-DECISION-001"
+        "SIGNED-DECISION-001",
+        "sha256:delete-fleet-entry-123"
     });
 
     assert(rejected.decisionStatus == ApprovalDecisionStatus::Rejected);
     assert(consumer.calls == 1);
-    assert(consumer.last.state.decision == ApprovalDecision::Rejected);
-    assert(consumer.last.state.request.targetId == "ENTRY-123");
+    assert(consumer.last.decision == ApprovalDecision::Rejected);
+    assert(consumer.last.request.targetId == "ENTRY-123");
 
     // Notification failure does not become rejection and does not create
     // an action signal.
@@ -122,7 +150,8 @@ int main() {
         "POST-99",
         "ACCOUNT-7",
         "Confirm post deletion.",
-        "SOCIAL-ACTION-CONSUMER"
+        "SOCIAL-ACTION-CONSUMER",
+        "sha256:delete-social-post-99"
     });
     assert(failedDelivery.createStatus == ApprovalCreateStatus::NotificationFailure);
     assert(consumer.calls == 1);
