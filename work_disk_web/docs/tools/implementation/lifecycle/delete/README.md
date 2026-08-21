@@ -1,96 +1,93 @@
 # Work_Disk Web — BOT-04 Delete Bot
 
-## Purpose
+BOT-04 is the Work_Disk deletion Tool Bot.
 
-BOT-04 is the Work_Disk deletion execution tool.
+## Core Rule
 
-Its responsibility is strictly limited to executing an authorised deletion
-operation through the approved execution boundary.
+> **Normal action executes normally. Approval-required action is held by Delete Bot until an authoritative approval decision commits or releases it.**
 
-The governing principle is:
+## Execution Modes
 
-> Authority decides. Delete Bot executes.
+### Normal Delete
 
-BOT-04 does not decide whether deletion is authorised.
+```text
+Delete Request
+  → Delete Bot
+  → Authoritative Delete Boundary
+  → Deleted
+```
 
-## Boundary
+No hold and no Warning & Approval call occurs.
 
-BOT-04 receives a deletion request containing:
+### Approval-Gated Delete
 
-- request identifier
-- target type
-- target identifier
-- authoritative authorisation reference
-- approval evidence
+```text
+Delete Request
+  → Delete Bot holds operation
+  → Warning & Approval Bot
+  → Pending
+       ├─ Approved → Delete Bot commits deletion
+       └─ Rejected → Delete Bot releases hold
+```
 
-Authority and domain decisions remain outside BOT-04.
+While held, the target remains existing. Rejection therefore does not restore the target; it simply releases an operation that never deleted it.
 
-BOT-04 does not own:
+## Boundaries
 
-- account authority
-- identity authority
-- fleet authority
-- ownership decisions
-- permission decisions
-- archive behaviour
-- trash behaviour
-- restore behaviour
-- filtering
-- sorting
+Delete Bot owns:
+
+- deletion lifecycle
+- pending hold lifecycle
+- commit after approval
+- release after rejection
+- authoritative deletion result mapping
+
+Warning & Approval Bot owns:
+
+- warning creation
+- approval request flow
+- positive/negative approval decision
+
+Delete Bot does not own:
+
+- approval policy
+- approver selection
+- notification delivery
+- Fleet authority
+- Contractor authority
+- Mark/Mark All
+- Archive
+- Trash
+- Restore
 - UI behaviour
-- universal cleanup
-- unrelated domain operations
+- ownership or permission decisions
 
-## Deletion Execution
+## No Expiry
 
-The deletion request crosses the `DeleteExecutionBoundary`.
+The approval-gated pending operation has no BOT-04 expiry. A future expiry policy would require an explicit architectural change.
 
-The authoritative boundary is responsible for target validation and
-authoritative deletion according to the applicable domain contract.
+## Idempotency
 
-BOT-04 reports the authoritative execution result.
+A request identifier represents one deletion lifecycle. Repeating a pending request does not create duplicate approval requests, and repeated successful deletion does not repeat destructive effects.
 
-Caller-controlled deletion semantics and caller-controlled cascade scope are
-not supported.
+## Public Results
 
-## Result Contract
-
-BOT-04 exposes explicit deletion outcomes:
+BOT-04 exposes explicit outcomes:
 
 - `Deleted`
 - `AlreadyDeleted`
 - `NotFound`
-- `ExecutionFailed`
+- `PendingApproval`
+- `Rejected`
+- `Failed`
 
-Execution failures distinguish relevant failure categories including:
+`PendingApproval` and `Rejected` are not successful deletion outcomes.
 
-- persistence failure
-- transaction failure
-- boundary failure
-
-Successful deletion is reported only from an authoritative successful result.
-
-`AlreadyDeleted` is treated as a successful idempotent outcome.
-
-## Safety
-
-BOT-04 must not:
-
-- grant authority
-- bypass authority
-- invent deletion semantics
-- expand deletion scope
-- convert execution failure into success
-- interpret presentation expiry as deletion
-- silently destroy protected historical or evidence data
-
-Undefined destructive behaviour remains a STOP condition.
-
-## Implementation
-
-The implementation consists of:
+## Implementation Files
 
 - `delete_request.h`
+- `delete_approval_boundary.h`
+- `delete_pending_operation.h`
 - `delete_error.h`
 - `delete_result.h`
 - `delete_result.cpp`
@@ -101,26 +98,12 @@ The implementation consists of:
 
 ## Verification
 
-BOT-04 verification includes:
+Verification covers both execution modes and the full approval lifecycle:
 
-- deletion result contract tests
-- execution boundary contract tests
-- execution boundary tests
-- execution failure mapping tests
-- complete integration boundary test
+`Normal → Execute`
 
-The integration test verifies:
+and
 
-`authorised request → target validation → deletion execution → authoritative result`
+`Approval Required → Hold → Warning/Approval → Commit or Release`
 
-## Status
-
-Architecture, implementation, unit verification, integration verification,
-commit, and repository push are complete.
-
-BOT-04 implementation commit:
-
-`3bda5f7` — `Implement BOT-04 delete lifecycle tool`
-
-README and PROFILE are documentation completion artifacts and do not expand
-the BOT-04 implementation boundary.
+No hardcoded Fleet-specific approval policy is embedded in BOT-04.
