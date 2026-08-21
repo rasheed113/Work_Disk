@@ -1,0 +1,3 @@
+#include "../../../src/tools/bot-60/document_preview/document_preview.h"
+#include <cassert>
+using namespace work_disk::tools::bot60; struct P:Provider{int n=0;Result preview(const Request&){++n;return{true,"p"};}Result convert(const Request&){++n;return{true,"c"};}}; int main(){P p;Request r{"1","c","doc","",Operation::Preview};assert(execute(r,p).accepted);r.operation=Operation::Convert;assert(!execute(r,p).accepted&&p.n==1);}
