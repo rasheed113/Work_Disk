@@ -1,0 +1,2 @@
+#include "call_signalling.h"
+namespace work_disk::tools::bot58 { Result execute(const Request&r,Provider&p){if(r.request_id.empty()||r.caller_context.empty()||r.session_reference.empty()||r.signal.empty())return{};return p.signal(r);} }
