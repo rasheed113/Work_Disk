@@ -149,8 +149,14 @@ int main() {
     assert(first.state.decision == ApprovalDecision::Pending);
     assert(notification.sent == 1);
 
+    const auto reboundCreate = bot.createWarning(
+        request("APR-001", "FLEET-BOT", "ENTRY-999")
+    );
+    assert(reboundCreate.createStatus == ApprovalCreateStatus::RequestContextMismatch);
+
     const auto pending = bot.query("APR-001");
     assert(pending.queryStatus == ApprovalQueryStatus::Pending);
+    assert(pending.state.request.targetId == "ENTRY-001");
 
     const auto approved = bot.receiveDecision({
         "APR-001", "CONTRACTOR-01", ApprovalDecision::Approved,
