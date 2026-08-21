@@ -1,0 +1,2 @@
+# BOT-38 — Permission Tool
+Reusable authorised permission-intent boundary. Provider owns policy, persistence, inheritance, conflict resolution and enforcement. Attacks: authority spoofing, subject substitution, capability escalation, cross-account leakage, stale grant, replay, revoke race, policy bypass, inheritance confusion, provider failure, duplicate mutation, audit gap, UI coupling, scope drift, hidden enforcement, persistence leakage, boundary drift. Contract validates all references before delegation; no permission decision is hardcoded here.
