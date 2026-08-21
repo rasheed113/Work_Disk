@@ -76,9 +76,12 @@ TrashResult TrashTool::restore(
         return TrashResult::expired(operationId);
     }
 
-    const TrashClaimResult claim = store_.claimForRestore(itemId, entry);
+    const TrashClaimResult claim = store_.claimForRestore(itemId, now, entry);
     if (claim == TrashClaimResult::NotFound) {
         return TrashResult::notFound(operationId);
+    }
+    if (claim == TrashClaimResult::Expired) {
+        return TrashResult::expired(operationId);
     }
     if (claim != TrashClaimResult::Claimed) {
         return TrashResult::failed(operationId, claim == TrashClaimResult::StorageFailure
