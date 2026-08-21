@@ -1,0 +1,54 @@
+# BOT-07 — Edit ✏️ Attack Register
+
+Status: 07A–07AX passed at blueprint/contract level.
+
+- 07A Original baseline overwrite — immutable first baseline.
+- 07B Revision-history leakage — no revision-history UI.
+- 07C Edited marker on personal data — domain/presentation controlled.
+- 07D Missing Edited marker — applicable successful edits expose authoritative marker state.
+- 07E Caller-supplied original — prohibited.
+- 07F Edit without authority — rejected.
+- 07G Permission engine takeover — authority remains caller/domain-owned.
+- 07H Target substitution — target bound to command.
+- 07I Field-scope expansion — explicit edit scope required.
+- 07J Replay — request identity/lifecycle store handles duplicates.
+- 07K Concurrent edit race — version boundary.
+- 07L Stale edit — explicit version conflict.
+- 07M Crash after mutation — durable retry resolution.
+- 07N Crash before mutation — no success without authoritative completion.
+- 07O Marker before mutation — no false success state.
+- 07P Mutation/marker divergence — host lifecycle boundary must keep authoritative result coherent.
+- 07Q Same-value edit — explicit no-op semantics.
+- 07R Malformed payload — reject before mutation.
+- 07S Type confusion — domain validation required.
+- 07T Cross-domain leakage — generic boundary only.
+- 07U Domain hardcoding — prohibited.
+- 07V Delete/edit race — stale edit cannot resurrect.
+- 07W Trash/edit race — Trash lifecycle cannot be bypassed.
+- 07X Archive/edit race — Archive lifecycle cannot be silently rewritten.
+- 07Y Restore/edit race — versioned authoritative transition.
+- 07Z Original destruction — baseline preserved.
+- 07AA Original tampering — baseline is not mutable edit input.
+- 07AB Editing the original — original is historical baseline, current value is edit target.
+- 07AC Multi-caller request collision — request identity must be unambiguous.
+- 07AD Scope injection — target/scope remain bounded.
+- 07AE Revoked authority — revalidate at execution boundary where host contract requires.
+- 07AF Edited marker forgery — marker follows authoritative mutation result.
+- 07AG Fake original — ignored; authoritative baseline wins.
+- 07AH Current/original confusion — `124 → 120 → 122` keeps original `124`.
+- 07AI Notification before commit — callers publish after authoritative result.
+- 07AJ Audit/history confusion — provenance is not deleted because UI history is absent.
+- 07AK Mass-edit scope explosion — no implicit cascade/bulk behaviour.
+- 07AL Bulk edit ambiguity — explicit contract required.
+- 07AM Presentation-only change — not an authoritative edit.
+- 07AN Canonical value ambiguity — domain validation/canonicalisation required.
+- 07AO Cross-account target — authority/target binding required.
+- 07AP Cross-role authority leakage — capability/context remains authoritative.
+- 07AQ Offline stale edit — stale version rejected.
+- 07AR Recovery snapshot overwrite — historical snapshot cannot become current authority.
+- 07AS Marker toggling corruption — deterministic authoritative state.
+- 07AT First-edit baseline capture failure — baseline established only on successful first edit.
+- 07AU Failed first edit — cannot establish baseline.
+- 07AV Failed later edit — cannot change baseline.
+- 07AW Rollback masquerading as new original — prohibited.
+- 07AX Edit after permanent destruction — cannot resurrect destroyed state.
