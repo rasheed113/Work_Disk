@@ -1,0 +1,1 @@
+export function Table({headers,rows}:{headers:readonly string[];rows:readonly (readonly string[])[]}){return <table><thead><tr>{headers.map(h=><th key={h} scope="col">{h}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c}</td>)}</tr>)}</tbody></table>}
