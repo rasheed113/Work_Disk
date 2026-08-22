@@ -28,6 +28,7 @@ export class AccountWebReadConnector {
       AccountDomainReadModel
     >,
     private readonly adapter = new AccountPresentationAdapter(),
+    private readonly correlationIdFactory: () => string = () => crypto.randomUUID(),
   ) {}
 
   async read(accountId: string): Promise<AccountPresentationModel | null> {
@@ -35,6 +36,7 @@ export class AccountWebReadConnector {
       await this.transport.request({
         operation: ACCOUNT_READ_OPERATION,
         payload: { accountId },
+        correlationId: this.correlationIdFactory(),
       })
 
     if (response.state === 'EMPTY') return null
