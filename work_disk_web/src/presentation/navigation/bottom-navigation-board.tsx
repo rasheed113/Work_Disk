@@ -6,7 +6,7 @@ export interface BottomNavigationItem {
   readonly destination: string
 }
 
-const ITEMS: readonly BottomNavigationItem[] = [
+export const BOTTOM_NAVIGATION_ITEMS: readonly BottomNavigationItem[] = [
   { id: 'bottom-dashboard', label: 'Dashboard', destination: '/dashboard' },
   { id: 'bottom-history', label: 'History', destination: '/history' },
   { id: 'bottom-finance', label: 'Finance', destination: '/finance' },
@@ -28,7 +28,7 @@ export function BottomNavigationBoard({
 }) {
   return (
     <nav aria-label="Primary navigation" className="bottom-navigation-board">
-      {ITEMS.map((item) => {
+      {BOTTOM_NAVIGATION_ITEMS.map((item) => {
         const button = buttons.find(
           (candidate) => candidate.destination === item.destination,
         )
