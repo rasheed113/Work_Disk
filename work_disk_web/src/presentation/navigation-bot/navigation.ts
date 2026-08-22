@@ -3,7 +3,6 @@ export const NAVIGATION_ITEMS = [
   { id: 'finance', to: '/workspace/finance', label: 'Finance' },
   { id: 'history', to: '/workspace/history', label: 'History' },
   { id: 'settings', to: '/workspace/settings', label: 'Settings' },
-  { id: 'profile', to: '/workspace/profile', label: 'Profile' },
 ] as const
 
 export type NavigationSurface = 'dashboard' | 'social' | 'feed'
