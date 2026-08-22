@@ -34,19 +34,17 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
       <button type="button" className="wd-dashboard-customize-toggle" aria-pressed={isCustomizing} onClick={() => setIsCustomizing((current) => !current)}>
         {isCustomizing ? 'Done' : 'Customize'}
       </button>
-      {isCustomizing && <>
-        <span className="wd-dashboard-toolbar__label">View</span>
-        <div className="wd-dashboard-view-toggle" role="group" aria-label="Dashboard view mode">
-          <button type="button" className={preferences.viewMode === 'grid' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'grid'} onClick={() => setViewMode('grid')}>Grid</button>
-          <button type="button" className={preferences.viewMode === 'list' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'list'} onClick={() => setViewMode('list')}>List</button>
-        </div>
-        {preferences.viewMode === 'grid' && <label className="wd-dashboard-grid-columns">
-          <span>Columns</span>
-          <select aria-label="Grid columns" value={preferences.gridColumns} onChange={(event) => setGridColumns(Number(event.target.value) as DashboardGridColumns)}>
-            {GRID_COLUMNS.map((columns) => <option key={columns} value={columns}>{columns}</option>)}
-          </select>
-        </label>}
-      </>}
+      <span className="wd-dashboard-toolbar__label">View</span>
+      <div className="wd-dashboard-view-toggle" role="group" aria-label="Dashboard view mode">
+        <button type="button" className={preferences.viewMode === 'grid' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'grid'} onClick={() => setViewMode('grid')}>Grid</button>
+        <button type="button" className={preferences.viewMode === 'list' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'list'} onClick={() => setViewMode('list')}>List</button>
+      </div>
+      {preferences.viewMode === 'grid' && <label className="wd-dashboard-grid-columns">
+        <span>Columns</span>
+        <select aria-label="Grid columns" value={preferences.gridColumns} onChange={(event) => setGridColumns(Number(event.target.value) as DashboardGridColumns)}>
+          {GRID_COLUMNS.map((columns) => <option key={columns} value={columns}>{columns}</option>)}
+        </select>
+      </label>}
     </div>
     <div className={`wd-dashboard-grid wd-dashboard-grid--${preferences.viewMode} wd-dashboard-grid--columns-${preferences.gridColumns}`}>
       {order.map((id) => {
