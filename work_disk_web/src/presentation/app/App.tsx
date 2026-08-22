@@ -6,7 +6,7 @@ import { WorkspaceShell } from '../features/account-profile-workspace/WorkspaceS
 import '../features/account-profile-workspace/workspace.css'
 
 function PresentationHome() {
-  return <Navigate to="/workspace" replace />
+  return <Navigate to="/workspace/dashboard" replace />
 }
 
 function EmptyWorkspaceDestination({ title }: { title: string }) {
@@ -24,7 +24,7 @@ export function App() {
     <Routes>
       <Route path="/" element={<PresentationHome />} />
       <Route path="/workspace" element={<WorkspaceShell />}>
-        <Route index element={<Navigate to="/profile" replace />} />
+        <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="profile" element={<AccountProfileSurface model={null} />} />
         <Route path="dashboard" element={<DashboardShell />} />
         <Route path="settings" element={<EmptyWorkspaceDestination title="Settings" />} />
@@ -32,7 +32,7 @@ export function App() {
       <Route path="/profile" element={<Navigate to="/workspace/profile" replace />} />
       <Route path="/dashboard" element={<Navigate to="/workspace/dashboard" replace />} />
       <Route path="/settings" element={<Navigate to="/workspace/settings" replace />} />
-      <Route path="*" element={<Navigate to="/workspace" replace />} />
+      <Route path="*" element={<Navigate to="/workspace/dashboard" replace />} />
     </Routes>
   )
 }
