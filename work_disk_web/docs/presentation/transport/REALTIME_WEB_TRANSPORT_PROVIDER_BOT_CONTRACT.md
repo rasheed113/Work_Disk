@@ -1,7 +1,7 @@
 # Work_Disk — Real-Time Web Transport Provider BOT Contract
 
 ## Status
-DESIGNED / CONTRACT LOCKED
+CONTRACT LOCKED / RUNTIME PROVIDER IMPLEMENTED
 
 ## Purpose
 Define the single shared transport-provider boundary between the Work_Disk authoritative C++ service/BOT layer and the Web presentation runtime.
@@ -18,7 +18,7 @@ Authoritative BOT/Service
 → UI
 
 ## Protocol Decision
-The first concrete runtime provider will use **HTTP request/response over the Web runtime's standard fetch transport**.
+The first concrete runtime provider uses **HTTP request/response over the Web runtime's standard fetch transport**.
 
 Rationale:
 - deterministic request/response semantics fit authoritative read operations;
@@ -70,6 +70,27 @@ Transport/provider failure is explicit. The provider must not convert an error i
 ## Security Boundary
 The provider transports authenticated context but does not create, verify, revoke, or redefine identity/session authority. Those remain owned by the authoritative identity/session contracts.
 
+## Runtime Implementation
+The first concrete runtime provider is implemented as:
+
+`FetchHttpTransportClient`
+→ browser `fetch`
+→ `HttpWebTransportProvider`
+→ shared presentation transport boundary.
+
+Implementation rules:
+- endpoint resolution is supplied explicitly by the caller;
+- an unrecognised operation is rejected rather than converted into a guessed URL;
+- `requestId` is sourced from the caller correlation ID and must round-trip unchanged;
+- `AUTHORITATIVE` requires a non-null payload;
+- `EMPTY` requires a null payload;
+- `ERROR` requires a null payload;
+- malformed envelopes are rejected;
+- network/HTTP/response failures remain explicit transport failures;
+- authenticated context is transported but never interpreted as domain authority.
+
+The runtime provider is domain-neutral. The Account endpoint remains a separate endpoint-handler concern governed by `ACCOUNT_ENDPOINT_CONTRACT.md` and must delegate to BOT-01 `AccountService::getAccount(accountId)`.
+
 ## Profile Vertical Slice
 BOT-02 `ProfileService::assemble(...)`
 → provider operation `profile.assemble`
@@ -78,6 +99,16 @@ BOT-02 `ProfileService::assemble(...)`
 → Dashboard Profile UI.
 
 The provider does not assemble profile data itself.
+
+## Verification
+The runtime provider is covered by tests for:
+- authoritative response preservation;
+- empty response preservation;
+- correlation preservation and mismatch rejection;
+- malformed authoritative payload rejection;
+- unrecognised operation rejection;
+- browser HTTP request mapping;
+- transport response validation.
 
 ## Evolution Rule
 Any new protocol, streaming mode, or wire-envelope change requires a new contract revision and corresponding tests. No silent protocol invention is permitted.
