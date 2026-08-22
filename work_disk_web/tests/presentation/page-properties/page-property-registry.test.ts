@@ -7,11 +7,12 @@ import {
 
 describe('page property registry', () => {
   it('contains only reusable presentation properties mapped to Tool-Bot capabilities', () => {
-    expect(PAGE_PROPERTIES).toHaveLength(13)
+    expect(PAGE_PROPERTIES).toHaveLength(14)
     expect(getPageProperty('search')?.bot).toBe('Search Tool-Bot')
     expect(getPageProperty('delete')?.bot).toBe('Delete Tool-Bot')
     expect(getPageProperty('notifications')?.bot).toBe('Notification Tool-Bot')
     expect(getPageProperty('navigation')?.bot).toBe('Navigation Buttons BOT')
+    expect(getPageProperty('account')?.bot).toBe('Account BOT-01')
   })
 
   it('never exposes hidden or unavailable properties as visible', () => {
