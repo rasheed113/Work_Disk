@@ -36,6 +36,7 @@ export interface DashboardCapability { id: string; title: string; description: s
 export interface DashboardActivityItem { id: string; title: string; timestamp: string }
 export interface DashboardNotification { id: string; title: string; timestamp: string; read: boolean }
 export interface DashboardSummaryMetric { id: string; label: string; value: string }
+export interface DashboardStatusStripItem { id: string; text: string; occurredAt: string; priority: number }
 
 export interface DashboardModel {
   profile: DashboardProfile | null
@@ -43,12 +44,13 @@ export interface DashboardModel {
   activities: DashboardActivityItem[]
   notifications: DashboardNotification[]
   summary: DashboardSummaryMetric[]
+  statusStrip: DashboardStatusStripItem[]
 }
 
 export const DASHBOARD_CARD_DEFINITIONS: readonly DashboardCardDefinition[] = [
   { id: 'profile', title: 'Profile', description: 'Current profile context is presented above the cards.', removable: false, contentSurface: false },
   { id: 'smart-clock', title: 'Smart Clock', description: 'Current local time is presented above the cards.', removable: false, contentSurface: false },
-  { id: 'ticker', title: 'Ticker / Status', description: 'Current status information.', removable: true, contentSurface: true },
+  { id: 'ticker', title: 'Status Strip', description: 'Legacy registry boundary retained for preference migration; the status strip is rendered as a non-card stream.', removable: false, contentSurface: false },
   { id: 'quick-actions', title: 'Quick Actions', description: 'Available actions.', removable: true, contentSurface: true },
   { id: 'summary', title: 'Summary / KPI', description: 'Authoritative summary metrics.', removable: true, contentSurface: true },
   { id: 'activity', title: 'Activity', description: 'Recent activity supplied by the domain.', removable: true, contentSurface: true },
