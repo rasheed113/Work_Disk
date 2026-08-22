@@ -6,10 +6,20 @@
   z-index: 1000;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.bottom-navigation-board button {
+.bottom-navigation-board__button {
   min-height: 56px;
   border: 0;
+  border-radius: 0;
   cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.bottom-navigation-board__button--active {
+  font-weight: 800;
 }
