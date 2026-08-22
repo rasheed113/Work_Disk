@@ -29,11 +29,17 @@ export interface ProviderEnvelope<TPayload> {
 }
 
 export interface HttpTransportClient {
-  request<TResponse>(
-    request: WebTransportRequest<ProviderRequest<unknown>>,
+  request<TPayload, TResponse>(
+    request: ProviderRequest<TPayload>,
   ): Promise<ProviderEnvelope<TResponse>>
 }
 
+/**
+ * Shared runtime provider BOT.
+ *
+ * It owns only the HTTP transport boundary. Domain authority remains in the
+ * operation's authoritative BOT/service and presentation remains downstream.
+ */
 export class HttpWebTransportProvider<TRequest, TResponse>
   implements WebTransportProvider<TRequest, TResponse>
 {
@@ -50,10 +56,9 @@ export class HttpWebTransportProvider<TRequest, TResponse>
       payload: request.payload,
     }
 
-    const envelope = await this.client.request<TResponse>({
-      operation: providerRequest.operation,
-      payload: providerRequest.payload,
-    })
+    const envelope = await this.client.request<TRequest, TResponse>(
+      providerRequest,
+    )
 
     if (envelope.state === 'ERROR') {
       throw new Error(
