@@ -150,6 +150,7 @@ No account/profile persistence, authentication, permission grants, or database a
 - Presentation stack architecture documentation — **IMPLEMENTED**
 - Reusable component system documentation — **IMPLEMENTED**
 - Account/Profile + Workspace feature documentation — **IMPLEMENTED**
+- Profile Presentation Adapter architecture documentation — **IMPLEMENTED**
 
 ## 10. Current Audit Notes
 - This menu is an inventory, not a replacement for individual architecture contracts.
@@ -163,6 +164,8 @@ No account/profile persistence, authentication, permission grants, or database a
 - Component runtime implementation is recorded only after PR #77 was merged to `main` and its CI verification was observed green.
 - Account/Profile + Workspace runtime is recorded only after PR #78 was merged to `main` and Web workflow run #9 completed successfully.
 - Settings is only registered as a workspace destination; its feature implementation remains deferred.
+- Profile Presentation Adapter is recorded only after PR #80 was merged to `main` and Main Verification workflow #16 completed successfully.
+- The Profile Presentation Adapter is a presentation boundary only; it does not replace or modify BOT-01/BOT-02 authority and does not claim to be the transport/application integration layer.
 
 ## 11. Update Rule
 Every future addition follows:
@@ -174,6 +177,9 @@ The Master Menu answers:
 > **What does Work_Disk actually have right now?**
 
 ## 12. Change Log
+### v1.8 — Profile Presentation Adapter boundary
+Recorded the P0-2 domain/service contract audit, authoritative ProfileService read/assembly path, presentation adapter boundary, adapter implementation, anti-fabrication tests, architecture documentation, merged PR #80 and green Main Verification workflow #16. BOT-01 and BOT-02 boundaries remained unchanged.
+
 ### v1.7 — Account/Profile + Workspace feature surface
 Recorded the P0 Account/Profile + Workspace architecture attack, five feature boundaries, blueprint, sealed contract, domain-neutral presentation model, Workspace Shell, Account/Profile surface, navigation, Dashboard route integration, deferred Settings destination, feature tests and green Web CI verification.
 
