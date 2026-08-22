@@ -3,7 +3,7 @@ import { Footer } from '../../footer/Footer'
 
 export function WorkspaceShell() {
   return (
-    <main className="wd-workspace-shell">
+    <main className="wd-workspace-shell" style={{ background: '#e8f7e8' }}>
       <header className="wd-workspace-header" aria-label="Work_Disk workspace header">
         <div className="wd-workspace-brand">
           <span className="wd-workspace-brand__mark" aria-hidden="true">WD</span>
@@ -15,7 +15,7 @@ export function WorkspaceShell() {
         <p className="wd-workspace-header__description">One stable identity boundary with feature surfaces assembled around it.</p>
       </header>
 
-      <section className="wd-workspace-content" style={{ background: '#e8f7e8', margin: 0, padding: 0, border: 0 }}>
+      <section className="wd-workspace-content" style={{ background: '#e8f7e8', margin: 0, paddingBottom: 0 }}>
         <Outlet />
       </section>
 
