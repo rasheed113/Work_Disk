@@ -10,7 +10,11 @@ describe('shared Web transport boundary', () => {
   it('never fabricates a response when the provider is unavailable', async () => {
     const transport = createUnavailableWebTransport<unknown, unknown>()
     await expect(
-      transport.request({ operation: 'profile.read', payload: {} }),
+      transport.request({
+        operation: 'profile.read',
+        payload: {},
+        correlationId: 'req-unavailable-1',
+      }),
     ).rejects.toThrow('WEB_TRANSPORT_PROVIDER_UNAVAILABLE')
   })
 })
