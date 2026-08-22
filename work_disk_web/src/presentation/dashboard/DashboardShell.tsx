@@ -4,7 +4,7 @@ const EMPTY_MODEL: DashboardModel = { profile: null, capabilities: [], activitie
 
 export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel }) {
   void model
-  return <main className="wd-dashboard-shell" id="dashboard">
+  return <main className="wd-dashboard-shell" id="dashboard" style={{ background: '#e8f7e8', minHeight: '100%' }}>
     <div className="wd-dashboard-pagebar">
       <h1 style={{
         background: 'linear-gradient(135deg, #00eaff 0%, #7c3cff 48%, #ff2bd6 100%)',
