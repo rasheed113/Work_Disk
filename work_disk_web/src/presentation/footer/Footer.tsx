@@ -1,4 +1,4 @@
-const FOOTER_ITEMS = [
+export const FOOTER_ITEMS = [
   { id: 'work-disk', label: 'WORK_DISK' },
   { id: 'workspace', label: 'Workspace' },
 ] as const
