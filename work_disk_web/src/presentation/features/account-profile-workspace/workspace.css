@@ -69,7 +69,7 @@
 
 .wd-workspace-header__description {
   max-width: 38rem;
-  margin: 16px 0 0;
+  margin: 24px 0 0;
   color: #607086;
   font-size: clamp(0.66rem, 1.25vw, 0.82rem);
   font-weight: 650;
@@ -157,7 +157,7 @@
 @media (max-width: 760px) {
   .wd-workspace-shell { padding: 16px; }
   .wd-workspace-header { align-items: flex-start; gap: 12px; padding-bottom: 14px; }
-  .wd-workspace-header__description { max-width: 15rem; margin-top: 12px; font-size: 0.64rem; }
+  .wd-workspace-header__description { max-width: 15rem; margin-top: 18px; font-size: 0.64rem; }
   .wd-workspace-brand__mark { width: 32px; height: 32px; flex-basis: 32px; }
   .wd-workspace-brand__title { letter-spacing: 0.11em; }
   .wd-workspace-nav { grid-template-columns: 1fr; }
