@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { DashboardCardId, DashboardPreferences } from '../model/dashboard'
+import type { DashboardCardId, DashboardPreferences, DashboardViewMode } from '../model/dashboard'
 import { createDefaultDashboardPreferences } from '../model/dashboard'
 
 const STORAGE_KEY = 'work-disk.dashboard.preferences.v1'
@@ -9,6 +9,10 @@ function isCardId(value: unknown): value is DashboardCardId {
     'header', 'profile', 'navigation', 'smart-clock', 'ticker', 'quick-actions',
     'summary', 'activity', 'notifications', 'capabilities', 'customisation', 'cards-gallery',
   ].includes(value)
+}
+
+function isViewMode(value: unknown): value is DashboardViewMode {
+  return value === 'grid' || value === 'list'
 }
 
 function readPreferences(): DashboardPreferences {
@@ -21,6 +25,7 @@ function readPreferences(): DashboardPreferences {
       hidden: Array.isArray(parsed.hidden) ? parsed.hidden.filter(isCardId) : base.hidden,
       pinned: Array.isArray(parsed.pinned) ? parsed.pinned.filter(isCardId) : base.pinned,
       order: Array.isArray(parsed.order) ? parsed.order.filter(isCardId) : base.order,
+      viewMode: isViewMode(parsed.viewMode) ? parsed.viewMode : base.viewMode,
     }
   } catch {
     return createDefaultDashboardPreferences()
@@ -48,7 +53,8 @@ export function useDashboardPreferences() {
     ;[order[index], order[target]] = [order[target], order[index]]
     return { ...current, order }
   })
+  const setViewMode = (viewMode: DashboardViewMode) => setPreferences((current) => ({ ...current, viewMode }))
   const reset = () => setPreferences(createDefaultDashboardPreferences())
 
-  return { preferences, hide, unhide, togglePin, reorder, reset }
+  return { preferences, hide, unhide, togglePin, reorder, setViewMode, reset }
 }
