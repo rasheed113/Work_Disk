@@ -25,25 +25,15 @@ function isGridColumns(value: unknown): value is DashboardGridColumns {
 }
 
 export function normalizeDashboardOrder(value: unknown): DashboardCardId[] {
-  // Persisted order is a presentation preference for the eight content surfaces.
-  // The twelve-boundary registry remains authoritative, but registry-only boundaries
-  // are kept in one canonical tail position so they can never appear as content or
-  // become reorderable Dashboard cards.
-  const contentOrder: DashboardCardId[] = []
+  // Legacy persisted order is normalized to the locked canonical registry order.
+  // Presentation-only visibility and context rules determine which boundaries are
+  // actually rendered; normalization must never create a new registry ordering.
+  if (!Array.isArray(value)) return [...DEFAULT_DASHBOARD_ORDER]
 
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      if (isRegistryCardId(item) && isContentCardId(item) && !contentOrder.includes(item)) {
-        contentOrder.push(item)
-      }
-    }
-  }
+  const hasKnownRegistryId = value.some((item) => isRegistryCardId(item))
+  if (!hasKnownRegistryId) return [...DEFAULT_DASHBOARD_ORDER]
 
-  for (const definition of CONTENT_DEFINITIONS) {
-    if (!contentOrder.includes(definition.id)) contentOrder.push(definition.id)
-  }
-
-  return [...contentOrder, ...REGISTRY_ONLY_IDS]
+  return [...DEFAULT_DASHBOARD_ORDER]
 }
 
 function readPreferences(): DashboardPreferences {
