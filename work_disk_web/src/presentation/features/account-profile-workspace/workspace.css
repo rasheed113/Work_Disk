@@ -15,9 +15,13 @@
 .wd-feature-card--empty { min-height: 150px; align-content: center; }
 
 .wd-navigation-buttons { margin: 18px 0; }
-.wd-navigation-buttons ul { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.wd-navigation-buttons ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
 .wd-navigation-buttons a { display: grid; place-items: center; min-height: 46px; padding: 8px 10px; border: 1px solid var(--wd-color-border, #d9e2ec); border-radius: 12px; background: var(--wd-color-surface, #fff); color: inherit; text-decoration: none; font-weight: 750; }
 .wd-navigation-buttons a.active { border-color: rgb(47 155 255 / 35%); background: rgb(47 155 255 / 12%); color: #1677c8; }
+
+.wd-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; padding: 18px 4px; border-top: 1px solid var(--wd-color-border, #d9e2ec); color: #65758a; font-size: 0.78rem; }
+.wd-footer__brand { font-weight: 900; letter-spacing: 0.16em; }
+.wd-footer__meta { font-weight: 650; }
 
 @media (max-width: 760px) {
   .wd-workspace-header { align-items: flex-start; gap: 12px; padding-bottom: 14px; }
@@ -28,6 +32,7 @@
   .wd-navigation-buttons ul { gap: 4px; }
   .wd-navigation-buttons a { min-height: 48px; padding: 6px 2px; border: 0; border-radius: 10px; font-size: 0.67rem; white-space: nowrap; }
   .wd-feature-card--3d { grid-template-columns: 1fr; }
+  .wd-footer { margin-top: 28px; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 }
 
 @media (prefers-reduced-motion: reduce) { .wd-feature-card--3d { transition: none; } }
