@@ -8,14 +8,15 @@ import { Profile } from './components/Profile'
 import { QuickActions } from './components/QuickActions'
 import { SearchCard } from './components/SearchCard'
 import { SmartClock } from './components/SmartClock'
+import { StatusStrip } from './components/Ticker'
 import { Summary } from './components/Summary'
-import { Ticker } from './components/Ticker'
 import { DASHBOARD_CARD_DEFINITIONS, type DashboardGridColumns, type DashboardModel } from './model/dashboard'
 import { useDashboardPreferences } from './state/preferences'
 import { Navigation } from './components/Navigation'
 import './components/SearchCard.css'
+import './components/StatusStrip.css'
 
-const EMPTY_MODEL: DashboardModel = { profile: null, capabilities: [], activities: [], notifications: [], summary: [] }
+const EMPTY_MODEL: DashboardModel = { profile: null, capabilities: [], activities: [], notifications: [], summary: [], statusStrip: [] }
 const GRID_COLUMNS: readonly DashboardGridColumns[] = [2, 3, 4]
 
 export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel }) {
@@ -56,6 +57,7 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
       <div className="wd-dashboard-profile-context__clock"><SmartClock /></div>
     </section>
     <SearchCard value={searchQuery} onChange={setSearchQuery} />
+    <StatusStrip items={model.statusStrip} />
     {isCustomizing && <Customisation
       definitions={DASHBOARD_CARD_DEFINITIONS}
       order={customisationOrder}
@@ -75,7 +77,6 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
         switch (id) {
           case 'profile': return <DashboardCard key={id} id={id} title={card.title}><Profile profile={model.profile} /></DashboardCard>
           case 'smart-clock': return <DashboardCard key={id} id={id} title={card.title}><SmartClock /></DashboardCard>
-          case 'ticker': return <DashboardCard key={id} id={id} title={card.title}><Ticker /></DashboardCard>
           case 'quick-actions': return <DashboardCard key={id} id={id} title={card.title}><QuickActions actions={[]} /></DashboardCard>
           case 'summary': return <DashboardCard key={id} id={id} title={card.title}><Summary metrics={model.summary} /></DashboardCard>
           case 'activity': return <DashboardCard key={id} id={id} title={card.title}><Activity items={model.activities} /></DashboardCard>
