@@ -4,7 +4,9 @@ import { createDefaultDashboardPreferences, DASHBOARD_CARD_DEFINITIONS, DEFAULT_
 
 const STORAGE_KEY = 'work-disk.dashboard.preferences.v1'
 const REGISTRY_IDS = new Set(DASHBOARD_CARD_DEFINITIONS.map((definition) => definition.id))
-const CONTENT_IDS = new Set(DASHBOARD_CARD_DEFINITIONS.filter((definition) => definition.contentSurface).map((definition) => definition.id))
+const CONTENT_DEFINITIONS = DASHBOARD_CARD_DEFINITIONS.filter((definition) => definition.contentSurface)
+const CONTENT_IDS = new Set(CONTENT_DEFINITIONS.map((definition) => definition.id))
+const REGISTRY_ONLY_IDS = DEFAULT_DASHBOARD_ORDER.filter((id) => !CONTENT_IDS.has(id))
 
 function isRegistryCardId(value: unknown): value is DashboardCardId {
   return typeof value === 'string' && REGISTRY_IDS.has(value as DashboardCardId)
@@ -23,16 +25,25 @@ function isGridColumns(value: unknown): value is DashboardGridColumns {
 }
 
 export function normalizeDashboardOrder(value: unknown): DashboardCardId[] {
-  const result: DashboardCardId[] = []
+  // Persisted order is a presentation preference for the eight content surfaces.
+  // The twelve-boundary registry remains authoritative, but registry-only boundaries
+  // are kept in one canonical tail position so they can never appear as content or
+  // become reorderable Dashboard cards.
+  const contentOrder: DashboardCardId[] = []
+
   if (Array.isArray(value)) {
     for (const item of value) {
-      if (isRegistryCardId(item) && !result.includes(item)) result.push(item)
+      if (isRegistryCardId(item) && isContentCardId(item) && !contentOrder.includes(item)) {
+        contentOrder.push(item)
+      }
     }
   }
-  for (const id of DEFAULT_DASHBOARD_ORDER) {
-    if (!result.includes(id)) result.push(id)
+
+  for (const definition of CONTENT_DEFINITIONS) {
+    if (!contentOrder.includes(definition.id)) contentOrder.push(definition.id)
   }
-  return result
+
+  return [...contentOrder, ...REGISTRY_ONLY_IDS]
 }
 
 function readPreferences(): DashboardPreferences {
@@ -68,7 +79,7 @@ export function useDashboardPreferences() {
   }))
   const reorder = (id: DashboardCardId, direction: -1 | 1) => setPreferences((current) => {
     const contentOrder = current.order.filter((item) => CONTENT_IDS.has(item))
-    const registryOnlyOrder = current.order.filter((item) => !CONTENT_IDS.has(item))
+    const registryOnlyOrder = REGISTRY_ONLY_IDS
     const index = contentOrder.indexOf(id)
     const target = index + direction
     if (index < 0 || target < 0 || target >= contentOrder.length) return current
