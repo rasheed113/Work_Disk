@@ -20,7 +20,9 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
   const { preferences, hide, unhide, togglePin, reorder, setViewMode, setGridColumns, reset } = useDashboardPreferences()
   const [isCustomizing, setIsCustomizing] = useState(false)
   const order = useMemo(() => [...preferences.order], [preferences.order])
-  const visibleOrder = useMemo(() => order.filter((id) => !preferences.hidden.includes(id)), [order, preferences.hidden])
+  const contentIds = useMemo(() => new Set(DASHBOARD_CARD_DEFINITIONS.filter((definition) => definition.contentSurface).map((definition) => definition.id)), [])
+  const visibleOrder = useMemo(() => order.filter((id) => contentIds.has(id) && !preferences.hidden.includes(id)), [order, preferences.hidden, contentIds])
+  const customisationOrder = useMemo(() => order.filter((id) => contentIds.has(id)), [order, contentIds])
 
   return <main className="wd-dashboard-shell" id="dashboard">
     <Header profile={model.profile} />
@@ -42,7 +44,7 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
     </div>
     {isCustomizing && <Customisation
       definitions={DASHBOARD_CARD_DEFINITIONS}
-      order={order}
+      order={customisationOrder}
       hidden={preferences.hidden}
       pinned={preferences.pinned}
       onHide={hide}
