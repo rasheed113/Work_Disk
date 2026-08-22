@@ -191,8 +191,8 @@ The Master Menu answers:
 > **What does Work_Disk actually have right now?**
 
 ## 13. Change Log
-### v1.9 — Real-Time Web Transport boundary foundation
-Recorded the shared Web transport architecture/boundary/contract, provider-neutral TypeScript boundary, no-fake unavailable provider and transport tests. Concrete runtime provider remains deferred until an authoritative HTTP/WebSocket/WASM protocol is established.
+### v2.0 — Real-Time Web Transport attack and boundary implementation
+Recorded the transport attack decision, shared Web transport architecture boundary, `WEB-TRANSPORT-01`, provider-neutral TypeScript boundary, explicit unavailable-provider implementation and no-fake tests. The concrete runtime provider remains deferred because the authoritative C++↔Web protocol has not yet been established.
 
 ### v1.8 — Profile Presentation Adapter boundary
 Recorded the P0-2 domain/service contract audit, authoritative ProfileService read/assembly path, presentation adapter boundary, adapter implementation, anti-fabrication tests, architecture documentation, merged PR #80 and green Main Verification workflow #16. BOT-01 and BOT-02 boundaries remained unchanged.
