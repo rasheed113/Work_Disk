@@ -6,7 +6,15 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
   void model
   return <main className="wd-dashboard-shell" id="dashboard">
     <div className="wd-dashboard-pagebar">
-      <h1 style={{ transform: 'perspective(220px) rotateX(8deg)', textShadow: '0 1px 0 #b8b8b8, 0 2px 0 #929292, 0 3px 0 #707070, 0 5px 8px rgba(0,0,0,.28)', letterSpacing: '0.02em' }}>Dashboard</h1>
+      <h1 style={{
+        background: 'linear-gradient(135deg, #00eaff 0%, #7c3cff 48%, #ff2bd6 100%)',
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        textShadow: '0 2px 0 rgba(0, 70, 120, .9), 0 4px 0 rgba(35, 15, 90, .8), 0 7px 18px rgba(0, 234, 255, .35), 0 9px 24px rgba(255, 43, 214, .25)',
+        letterSpacing: '0.04em',
+        fontWeight: 800
+      }}>Dashboard</h1>
     </div>
   </main>
 }
