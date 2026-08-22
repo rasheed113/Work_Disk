@@ -16,17 +16,30 @@ describe('Work_Disk visible interface contract', () => {
     expect(gallery?.removable).toBe(false)
   })
 
-  it('defaults the presentation view to Grid', () => {
+  it('defaults the presentation view to Grid with two columns', () => {
     const preferences = createDefaultDashboardPreferences()
     expect(preferences.viewMode).toBe('grid')
+    expect(preferences.gridColumns).toBe(2)
   })
 
-  it('treats Grid and List as presentation modes without changing the card order contract', () => {
+  it('supports only the contracted 2, 3 and 4 grid column choices', () => {
+    const preferences = createDefaultDashboardPreferences()
+    const choices = [2, 3, 4] as const
+    expect(choices).toContain(preferences.gridColumns)
+    for (const columns of choices) {
+      preferences.gridColumns = columns
+      expect(preferences.gridColumns).toBe(columns)
+    }
+  })
+
+  it('treats Grid/List and column count as presentation preferences without changing card order', () => {
     const preferences = createDefaultDashboardPreferences()
     const orderBefore = [...preferences.order]
     preferences.viewMode = 'list'
+    preferences.gridColumns = 4
     expect(preferences.order).toEqual(orderBefore)
     preferences.viewMode = 'grid'
+    preferences.gridColumns = 2
     expect(preferences.order).toEqual(orderBefore)
   })
 })
