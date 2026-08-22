@@ -4,6 +4,7 @@ import '../dashboard/dashboard.css'
 import { AccountProfileSurface } from '../features/account-profile-workspace/AccountProfileSurface'
 import { WorkspaceShell } from '../features/account-profile-workspace/WorkspaceShell'
 import '../features/account-profile-workspace/workspace.css'
+import { AccountSettingsSurface } from '../settings/AccountSettingsSurface'
 
 function PresentationHome() {
   return <Navigate to="/workspace/dashboard" replace />
@@ -14,6 +15,7 @@ function EmptyWorkspaceDestination({ title }: { title: string }) {
     <main className="wd-dashboard-shell wd-page-destination" id={`${title.toLowerCase()}-page`} style={{ background: '#e8f7e8', minHeight: '100%' }}>
       <div className="wd-dashboard-pagebar wd-page-destination__bar">
         <h1 className="wd-page-destination__title">{title}</h1>
+        {title === 'Settings' && <AccountSettingsSurface account={null} />}
       </div>
     </main>
   )
