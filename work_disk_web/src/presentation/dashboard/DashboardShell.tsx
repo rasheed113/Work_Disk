@@ -12,6 +12,7 @@ import { Summary } from './components/Summary'
 import { Ticker } from './components/Ticker'
 import { DASHBOARD_CARD_DEFINITIONS, type DashboardGridColumns, type DashboardModel } from './model/dashboard'
 import { useDashboardPreferences } from './state/preferences'
+import { Navigation } from './components/Navigation'
 
 const EMPTY_MODEL: DashboardModel = { profile: null, capabilities: [], activities: [], notifications: [], summary: [] }
 const GRID_COLUMNS: readonly DashboardGridColumns[] = [2, 3, 4]
@@ -19,6 +20,7 @@ const GRID_COLUMNS: readonly DashboardGridColumns[] = [2, 3, 4]
 export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel }) {
   const { preferences, hide, unhide, togglePin, reorder, setViewMode, setGridColumns, reset } = useDashboardPreferences()
   const [isCustomizing, setIsCustomizing] = useState(false)
+  const [isMoreOpen, setIsMoreOpen] = useState(false)
   const order = useMemo(() => [...preferences.order], [preferences.order])
   const contentIds = useMemo(() => new Set(DASHBOARD_CARD_DEFINITIONS.filter((definition) => definition.contentSurface).map((definition) => definition.id)), [])
   const visibleOrder = useMemo(() => order.filter((id) => contentIds.has(id) && !preferences.hidden.includes(id)), [order, preferences.hidden, contentIds])
@@ -26,22 +28,33 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
 
   return <main className="wd-dashboard-shell" id="dashboard">
     <Header profile={model.profile} />
-    <div className={`wd-dashboard-toolbar${isCustomizing ? ' is-customizing' : ''}`} aria-label="Dashboard presentation controls">
-      <span className="wd-dashboard-toolbar__label">View</span>
-      <div className="wd-dashboard-view-toggle" role="group" aria-label="Dashboard view mode">
-        <button type="button" className={preferences.viewMode === 'grid' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'grid'} onClick={() => setViewMode('grid')}>Grid</button>
-        <button type="button" className={preferences.viewMode === 'list' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'list'} onClick={() => setViewMode('list')}>List</button>
+    <div className="wd-dashboard-pagebar">
+      <h1>Dashboard</h1>
+      <div className="wd-dashboard-more">
+        <button type="button" className="wd-dashboard-more__toggle" aria-expanded={isMoreOpen} aria-haspopup="menu" onClick={() => setIsMoreOpen((current) => !current)}>More <span aria-hidden="true">▾</span></button>
+        {isMoreOpen && <div className="wd-dashboard-more__menu" role="menu" aria-label="Dashboard options">
+          <div className="wd-dashboard-more__section">View</div>
+          <button type="button" role="menuitem" className={preferences.viewMode === 'grid' ? 'is-selected' : ''} onClick={() => { setViewMode('grid'); setIsMoreOpen(false) }}>Grid</button>
+          <button type="button" role="menuitem" className={preferences.viewMode === 'list' ? 'is-selected' : ''} onClick={() => { setViewMode('list'); setIsMoreOpen(false) }}>List</button>
+          {preferences.viewMode === 'grid' && <label className="wd-dashboard-more__columns"><span>Columns</span><select aria-label="Grid columns" value={preferences.gridColumns} onChange={(event) => setGridColumns(Number(event.target.value) as DashboardGridColumns)}>{GRID_COLUMNS.map((columns) => <option key={columns} value={columns}>{columns}</option>)}</select></label>}
+          <button type="button" role="menuitem" onClick={() => { setIsCustomizing(true); setIsMoreOpen(false) }}>Customize Dashboard</button>
+          <button type="button" role="menuitem" disabled aria-disabled="true">Filter</button>
+          <button type="button" role="menuitem" disabled aria-disabled="true">Sort By</button>
+          <button type="button" role="menuitem" disabled aria-disabled="true">Cards Gallery</button>
+        </div>}
       </div>
-      {preferences.viewMode === 'grid' && <label className="wd-dashboard-grid-columns">
-        <span>Columns</span>
-        <select aria-label="Grid columns" value={preferences.gridColumns} onChange={(event) => setGridColumns(Number(event.target.value) as DashboardGridColumns)}>
-          {GRID_COLUMNS.map((columns) => <option key={columns} value={columns}>{columns}</option>)}
-        </select>
-      </label>}
-      <button type="button" className="wd-dashboard-customize-toggle" aria-pressed={isCustomizing} onClick={() => setIsCustomizing((current) => !current)}>
-        {isCustomizing ? 'Done' : 'Customize'}
-      </button>
     </div>
+    <section className="wd-dashboard-profile-context" aria-label="Profile context">
+      <div className="wd-dashboard-profile-context__identity">
+        <div className="wd-dashboard-profile-context__cover" aria-hidden="true" />
+        <div className="wd-dashboard-profile-context__details">
+          <div className="wd-dashboard-profile-context__avatar" aria-hidden="true">{model.profile?.displayName?.slice(0, 1).toUpperCase() ?? 'P'}</div>
+          <div><strong>{model.profile?.displayName ?? 'Profile'}</strong><span>{model.profile?.accountId ?? 'Account ID unavailable'}</span>{model.profile?.accountId && <button type="button" onClick={() => navigator.clipboard?.writeText(model.profile!.accountId)}>Copy ID</button>}</div>
+        </div>
+      </div>
+      <div className="wd-dashboard-profile-context__clock"><SmartClock /></div>
+    </section>
+    <label className="wd-dashboard-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="Search Dashboard..." aria-label="Search Dashboard" /></label>
     {isCustomizing && <Customisation
       definitions={DASHBOARD_CARD_DEFINITIONS}
       order={customisationOrder}
@@ -70,5 +83,6 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
         }
       })}
     </div>
+    <Navigation />
   </main>
 }
