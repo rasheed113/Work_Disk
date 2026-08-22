@@ -11,15 +11,19 @@ function PresentationHome() {
 
 function EmptyWorkspaceDestination({ title }: { title: string }) {
   return (
-    <section
-      className="wd-feature-card wd-feature-card--empty"
-      aria-labelledby="destination-title"
-      style={{ background: '#e8f7e8' }}
-    >
-      <span className="wd-feature-card__label">FEATURE SURFACE</span>
-      <h2 id="destination-title">{title}</h2>
-      <p>This destination is registered in the workspace shell but its feature implementation is deferred.</p>
-    </section>
+    <main className="wd-dashboard-shell" id={`${title.toLowerCase()}-page`} style={{ background: '#e8f7e8', minHeight: '100%' }}>
+      <div className="wd-dashboard-pagebar">
+        <h1 style={{
+          background: 'linear-gradient(135deg, #00eaff 0%, #7c3cff 48%, #ff2bd6 100%)',
+          WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          textShadow: '0 2px 0 rgba(0, 70, 120, .9), 0 4px 0 rgba(35, 15, 90, .8), 0 7px 18px rgba(0, 234, 255, .35), 0 9px 24px rgba(255, 43, 214, .25)',
+          letterSpacing: '0.04em',
+          fontWeight: 800
+        }}>{title}</h1>
+      </div>
+    </main>
   )
 }
 
