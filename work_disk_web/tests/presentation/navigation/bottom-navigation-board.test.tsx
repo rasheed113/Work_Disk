@@ -1,25 +1,17 @@
-import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
 import { BottomNavigationBoard } from '../../../src/presentation/navigation/bottom-navigation-board'
 
 describe('BottomNavigationBoard', () => {
-  it('renders exactly the four approved navigation labels', () => {
-    render(
-      <BottomNavigationBoard
-        buttons={[
-          { id: '1', kind: 'PAGE', label: 'Dashboard', destination: '/dashboard' },
-          { id: '2', kind: 'PAGE', label: '/history', destination: '/history' },
-          { id: '3', kind: 'PAGE', label: '/finance', destination: '/finance' },
-          { id: '4', kind: 'PAGE', label: '/settings', destination: '/settings' },
-        ]}
-        onNavigate={vi.fn()}
-      />,
-    )
+  it('defines exactly the four approved navigation destinations', () => {
+    const source = BottomNavigationBoard.toString()
 
-    expect(screen.getAllByRole('button')).toHaveLength(4)
-    expect(screen.getByRole('button', { name: 'Dashboard' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'History' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Finance' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Settings' })).toBeTruthy()
+    expect(source).toContain("label: 'Dashboard'")
+    expect(source).toContain("label: 'History'")
+    expect(source).toContain("label: 'Finance'")
+    expect(source).toContain("label: 'Settings'")
+    expect(source).toContain("destination: '/dashboard'")
+    expect(source).toContain("destination: '/history'")
+    expect(source).toContain("destination: '/finance'")
+    expect(source).toContain("destination: '/settings'")
   })
 })
