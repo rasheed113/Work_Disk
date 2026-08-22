@@ -12,6 +12,8 @@ export type DashboardCardId =
   | 'customisation'
   | 'cards-gallery'
 
+export type DashboardViewMode = 'grid' | 'list'
+
 export interface DashboardCardDefinition {
   id: DashboardCardId
   title: string
@@ -23,6 +25,7 @@ export interface DashboardPreferences {
   hidden: DashboardCardId[]
   pinned: DashboardCardId[]
   order: DashboardCardId[]
+  viewMode: DashboardViewMode
 }
 
 export interface DashboardProfile { displayName: string; accountId: string }
@@ -57,5 +60,5 @@ export const DASHBOARD_CARD_DEFINITIONS: readonly DashboardCardDefinition[] = [
 export const DEFAULT_DASHBOARD_ORDER: readonly DashboardCardId[] = DASHBOARD_CARD_DEFINITIONS.map(({ id }) => id)
 
 export function createDefaultDashboardPreferences(): DashboardPreferences {
-  return { hidden: [], pinned: [], order: [...DEFAULT_DASHBOARD_ORDER] }
+  return { hidden: [], pinned: [], order: [...DEFAULT_DASHBOARD_ORDER], viewMode: 'grid' }
 }
