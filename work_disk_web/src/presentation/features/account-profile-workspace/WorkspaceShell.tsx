@@ -1,5 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
-import { WORKSPACE_NAV_ITEMS } from './model'
+import { Outlet } from 'react-router-dom'
 
 export function WorkspaceShell() {
   return (
@@ -11,19 +10,6 @@ export function WorkspaceShell() {
           <p>One stable identity boundary with feature surfaces assembled around it.</p>
         </div>
       </header>
-
-      <nav className="wd-workspace-nav" aria-label="Workspace navigation">
-        {WORKSPACE_NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) => `wd-workspace-nav__item${isActive ? ' is-active' : ''}`}
-          >
-            <strong>{item.label}</strong>
-            <span>{item.description}</span>
-          </NavLink>
-        ))}
-      </nav>
 
       <section className="wd-workspace-content">
         <Outlet />
