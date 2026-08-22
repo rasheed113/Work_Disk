@@ -8,7 +8,7 @@ Define the user-facing Dashboard composition after the #84 visual review while p
 `Workspace Shell → Dashboard Header/Context → Presentation Controls → Dashboard Content → Optional Customize Mode`
 
 ### Global shell
-Owned by the Workspace Shell. Primary navigation is rendered once at the workspace boundary.
+Owned by the Workspace Shell. Primary navigation is owned and rendered by the dedicated Navigation Buttons Bot as a sibling presentation boundary, never as Dashboard content.
 
 ### Dashboard header/context
 `Header` presents Work_Disk and the current account context. It does not own identity authority.
@@ -36,7 +36,7 @@ The user-facing content surfaces are:
 Customize is ephemeral UI state. When active, a dedicated management surface exposes Hide/Unhide, Pin/Unpin, Move Up/Down and Reset to Default. These operations remain non-destructive and presentation-only.
 
 ### Non-content surfaces
-Workspace Navigation and Cards Gallery/registry infrastructure are not Dashboard cards. The Dashboard does not render them as ordinary content.
+Workspace Navigation and Cards Gallery/registry infrastructure are not Dashboard cards. The Navigation Buttons Bot owns navigation presentation and surface visibility. The Dashboard does not register navigation as ordinary content.
 
 ## Preserved invariants
 - Grid/List remains exactly `grid | list`.
