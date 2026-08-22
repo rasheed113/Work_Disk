@@ -13,17 +13,14 @@ export const BOTTOM_NAVIGATION_ITEMS: readonly BottomNavigationItem[] = [
   { id: 'bottom-settings', label: 'Settings', destination: '/settings' },
 ]
 
-/**
- * Independent bottom navigation presentation component.
- * It is not a Dashboard property. It consumes navigation intents supplied by
- * the Navigation Buttons BOT and maps the four registered destinations to the
- * product's current labels.
- */
+/** Independent bottom navigation presentation component; not a Dashboard property. */
 export function BottomNavigationBoard({
   buttons,
+  activeDestination,
   onNavigate,
 }: {
   readonly buttons: readonly NavigationButton[]
+  readonly activeDestination?: string
   readonly onNavigate: (destination: string) => void
 }) {
   return (
@@ -35,11 +32,15 @@ export function BottomNavigationBoard({
 
         if (!button) return null
 
+        const active = activeDestination === item.destination
+
         return (
           <button
             key={item.id}
             type="button"
             aria-label={item.label}
+            aria-current={active ? 'page' : undefined}
+            className={active ? 'bottom-navigation-board__button bottom-navigation-board__button--active' : 'bottom-navigation-board__button'}
             onClick={() => onNavigate(item.destination)}
           >
             {item.label}
