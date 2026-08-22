@@ -40,7 +40,7 @@
 
 .wd-workspace-brand__copy {
   display: grid;
-  gap: 1px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -50,7 +50,7 @@
   font-size: clamp(1.05rem, 2.2vw, 1.55rem);
   font-weight: 950;
   letter-spacing: 0.16em;
-  line-height: 1;
+  line-height: 1.08;
   text-shadow: 0 1px 0 #fff, 0 2px 0 rgb(23 32 51 / 12%), 0 4px 10px rgb(23 32 51 / 10%);
   transform: perspective(700px) rotateX(2deg);
 }
@@ -62,7 +62,7 @@
   font-size: clamp(0.56rem, 1.1vw, 0.7rem);
   font-weight: 900;
   letter-spacing: 0.3em;
-  line-height: 1.1;
+  line-height: 1.2;
   text-transform: uppercase;
   text-shadow: 0 1px 0 #fff, 0 2px 3px rgb(96 112 134 / 18%);
 }
