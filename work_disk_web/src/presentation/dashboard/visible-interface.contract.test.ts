@@ -14,6 +14,7 @@ describe('Work_Disk visible interface contract', () => {
 
     expect(customisation?.removable).toBe(false)
     expect(gallery?.removable).toBe(false)
+    expect(DASHBOARD_CARD_DEFINITIONS.every((card) => card.removable || card.id === 'header' || card.id === 'navigation' || card.id === 'customisation' || card.id === 'cards-gallery')).toBe(true)
   })
 
   it('defaults the presentation view to Grid with two columns', () => {
@@ -35,11 +36,29 @@ describe('Work_Disk visible interface contract', () => {
   it('treats Grid/List and column count as presentation preferences without changing card order', () => {
     const preferences = createDefaultDashboardPreferences()
     const orderBefore = [...preferences.order]
+    const hiddenBefore = [...preferences.hidden]
+    const pinnedBefore = [...preferences.pinned]
+
     preferences.viewMode = 'list'
     preferences.gridColumns = 4
     expect(preferences.order).toEqual(orderBefore)
+    expect(preferences.hidden).toEqual(hiddenBefore)
+    expect(preferences.pinned).toEqual(pinnedBefore)
+
     preferences.viewMode = 'grid'
     preferences.gridColumns = 2
     expect(preferences.order).toEqual(orderBefore)
+    expect(preferences.hidden).toEqual(hiddenBefore)
+    expect(preferences.pinned).toEqual(pinnedBefore)
+  })
+
+  it('keeps the mobile presentation policy presentation-only', () => {
+    const preferences = createDefaultDashboardPreferences()
+    preferences.viewMode = 'grid'
+    preferences.gridColumns = 4
+
+    expect(preferences.viewMode).toBe('grid')
+    expect(preferences.gridColumns).toBe(4)
+    expect(preferences.order).toEqual(DEFAULT_DASHBOARD_ORDER)
   })
 })
