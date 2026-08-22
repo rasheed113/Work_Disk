@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createUnavailableWebTransport } from './realtime-web-transport'
+import { createUnavailableWebTransport } from '../../../src/presentation/transport/realtime-web-transport'
 
 describe('shared Web transport boundary', () => {
   it('exposes an explicit unavailable state when no provider exists', () => {
