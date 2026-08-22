@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { DashboardCardId, DashboardPreferences, DashboardViewMode } from '../model/dashboard'
+import type { DashboardCardId, DashboardGridColumns, DashboardPreferences, DashboardViewMode } from '../model/dashboard'
 import { createDefaultDashboardPreferences } from '../model/dashboard'
 
 const STORAGE_KEY = 'work-disk.dashboard.preferences.v1'
@@ -15,6 +15,10 @@ function isViewMode(value: unknown): value is DashboardViewMode {
   return value === 'grid' || value === 'list'
 }
 
+function isGridColumns(value: unknown): value is DashboardGridColumns {
+  return value === 2 || value === 3 || value === 4
+}
+
 function readPreferences(): DashboardPreferences {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
@@ -26,6 +30,7 @@ function readPreferences(): DashboardPreferences {
       pinned: Array.isArray(parsed.pinned) ? parsed.pinned.filter(isCardId) : base.pinned,
       order: Array.isArray(parsed.order) ? parsed.order.filter(isCardId) : base.order,
       viewMode: isViewMode(parsed.viewMode) ? parsed.viewMode : base.viewMode,
+      gridColumns: isGridColumns(parsed.gridColumns) ? parsed.gridColumns : base.gridColumns,
     }
   } catch {
     return createDefaultDashboardPreferences()
@@ -54,7 +59,8 @@ export function useDashboardPreferences() {
     return { ...current, order }
   })
   const setViewMode = (viewMode: DashboardViewMode) => setPreferences((current) => ({ ...current, viewMode }))
+  const setGridColumns = (gridColumns: DashboardGridColumns) => setPreferences((current) => ({ ...current, gridColumns }))
   const reset = () => setPreferences(createDefaultDashboardPreferences())
 
-  return { preferences, hide, unhide, togglePin, reorder, setViewMode, reset }
+  return { preferences, hide, unhide, togglePin, reorder, setViewMode, setGridColumns, reset }
 }
