@@ -2,9 +2,16 @@ export type WebTransportState =
   | 'READY'
   | 'UNAVAILABLE'
 
+export interface TransportContext {
+  readonly sessionToken?: string
+  readonly accountId?: string
+}
+
 export interface WebTransportRequest<TRequest> {
   readonly operation: string
   readonly payload: TRequest
+  readonly correlationId: string
+  readonly context?: TransportContext
 }
 
 export interface WebTransportResponse<TResponse> {
