@@ -35,6 +35,13 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Verify Pages artifact entrypoint
+        run: |
+          set -euo pipefail
+          test -f dist/index.html
+          test -d dist/assets
+          grep -q '<div id="root"></div>' dist/index.html
+          echo "Pages artifact contract: PASS"
 
   deploy-pages:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -59,6 +66,12 @@ jobs:
           cache-dependency-path: work_disk_web/package.json
       - run: npm install
       - run: npm run build
+      - name: Verify deployment artifact entrypoint
+        run: |
+          set -euo pipefail
+          test -f dist/index.html
+          test -d dist/assets
+          echo "Deployment artifact contract: PASS"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
