@@ -8,7 +8,7 @@ export interface WebTransportRequest<TRequest> {
 }
 
 export interface WebTransportResponse<TResponse> {
-  readonly state: 'AUTHORIATIVE' | 'EMPTY'
+  readonly state: 'AUTHORITATIVE' | 'EMPTY'
   readonly payload: TResponse | null
 }
 
@@ -19,13 +19,6 @@ export interface WebTransportProvider<TRequest, TResponse> {
   ): Promise<WebTransportResponse<TResponse>>
 }
 
-/**
- * Shared Web transport boundary.
- *
- * The transport carries authoritative provider results but does not know BOT
- * business rules or page presentation models. No provider means an explicit
- * unavailable state; it is never converted into fabricated data.
- */
 export function createUnavailableWebTransport<
   TRequest,
   TResponse,
