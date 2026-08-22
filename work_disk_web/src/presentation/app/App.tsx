@@ -11,7 +11,11 @@ function PresentationHome() {
 
 function EmptyWorkspaceDestination({ title }: { title: string }) {
   return (
-    <section className="wd-feature-card wd-feature-card--empty" aria-labelledby="destination-title">
+    <section
+      className="wd-feature-card wd-feature-card--empty"
+      aria-labelledby="destination-title"
+      style={{ background: '#e8f7e8' }}
+    >
       <span className="wd-feature-card__label">FEATURE SURFACE</span>
       <h2 id="destination-title">{title}</h2>
       <p>This destination is registered in the workspace shell but its feature implementation is deferred.</p>
