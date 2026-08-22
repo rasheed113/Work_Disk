@@ -3,12 +3,15 @@ import { Outlet } from 'react-router-dom'
 export function WorkspaceShell() {
   return (
     <main className="wd-workspace-shell">
-      <header className="wd-workspace-header">
-        <div>
-          <p className="wd-feature-surface__eyebrow">WORK_DISK</p>
-          <h1>Workspace</h1>
-          <p>One stable identity boundary with feature surfaces assembled around it.</p>
+      <header className="wd-workspace-header" aria-label="Work_Disk workspace header">
+        <div className="wd-workspace-brand">
+          <span className="wd-workspace-brand__mark" aria-hidden="true">WD</span>
+          <div className="wd-workspace-brand__copy">
+            <span className="wd-workspace-brand__title">WORK_DISK</span>
+            <span className="wd-workspace-brand__subtitle">WORKSPACE</span>
+          </div>
         </div>
+        <p className="wd-workspace-header__description">One stable identity boundary with feature surfaces assembled around it.</p>
       </header>
 
       <section className="wd-workspace-content">
