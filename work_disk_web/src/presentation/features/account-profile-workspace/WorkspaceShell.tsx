@@ -15,7 +15,7 @@ export function WorkspaceShell() {
         <p className="wd-workspace-header__description">One stable identity boundary with feature surfaces assembled around it.</p>
       </header>
 
-      <section className="wd-workspace-content" style={{ background: '#e8f7e8' }}>
+      <section className="wd-workspace-content" style={{ background: '#e8f7e8', margin: 0, padding: 0, border: 0 }}>
         <Outlet />
       </section>
 
