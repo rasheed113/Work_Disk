@@ -46,8 +46,8 @@ export interface DashboardModel {
 }
 
 export const DASHBOARD_CARD_DEFINITIONS: readonly DashboardCardDefinition[] = [
-  { id: 'profile', title: 'Profile', description: 'Current profile summary.', removable: true, contentSurface: true },
-  { id: 'smart-clock', title: 'Smart Clock', description: 'Current local time.', removable: true, contentSurface: true },
+  { id: 'profile', title: 'Profile', description: 'Current profile context is presented above the cards.', removable: false, contentSurface: false },
+  { id: 'smart-clock', title: 'Smart Clock', description: 'Current local time is presented above the cards.', removable: false, contentSurface: false },
   { id: 'ticker', title: 'Ticker / Status', description: 'Current status information.', removable: true, contentSurface: true },
   { id: 'quick-actions', title: 'Quick Actions', description: 'Available actions.', removable: true, contentSurface: true },
   { id: 'summary', title: 'Summary / KPI', description: 'Authoritative summary metrics.', removable: true, contentSurface: true },
