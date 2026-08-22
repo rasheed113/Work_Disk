@@ -3,14 +3,15 @@ import type { NavigationButton } from './navigation-buttons-bot'
 export interface BottomNavigationItem {
   readonly id: string
   readonly label: string
+  readonly icon: string
   readonly destination: string
 }
 
 export const BOTTOM_NAVIGATION_ITEMS: readonly BottomNavigationItem[] = [
-  { id: 'bottom-dashboard', label: 'Dashboard', destination: '/dashboard' },
-  { id: 'bottom-history', label: 'History', destination: '/history' },
-  { id: 'bottom-finance', label: 'Finance', destination: '/finance' },
-  { id: 'bottom-settings', label: 'Settings', destination: '/settings' },
+  { id: 'bottom-dashboard', label: 'Dashboard', icon: '🖥️', destination: '/dashboard' },
+  { id: 'bottom-history', label: 'History', icon: '⏲️', destination: '/history' },
+  { id: 'bottom-finance', label: 'Finance', icon: '🪙', destination: '/finance' },
+  { id: 'bottom-settings', label: 'Settings', icon: '🔧', destination: '/settings' },
 ]
 
 /** Independent bottom navigation presentation component; not a Dashboard property. */
@@ -43,7 +44,8 @@ export function BottomNavigationBoard({
             className={active ? 'bottom-navigation-board__button bottom-navigation-board__button--active' : 'bottom-navigation-board__button'}
             onClick={() => onNavigate(item.destination)}
           >
-            {item.label}
+            <span className="bottom-navigation-board__icon" aria-hidden="true">{item.icon}</span>
+            <span className="bottom-navigation-board__label">{item.label}</span>
           </button>
         )
       })}
