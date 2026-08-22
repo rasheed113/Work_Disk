@@ -27,10 +27,14 @@ export function App() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="profile" element={<AccountProfileSurface model={null} />} />
         <Route path="dashboard" element={<DashboardShell />} />
+        <Route path="history" element={<EmptyWorkspaceDestination title="History" />} />
+        <Route path="finance" element={<EmptyWorkspaceDestination title="Finance" />} />
         <Route path="settings" element={<EmptyWorkspaceDestination title="Settings" />} />
       </Route>
       <Route path="/profile" element={<Navigate to="/workspace/profile" replace />} />
       <Route path="/dashboard" element={<Navigate to="/workspace/dashboard" replace />} />
+      <Route path="/history" element={<Navigate to="/workspace/history" replace />} />
+      <Route path="/finance" element={<Navigate to="/workspace/finance" replace />} />
       <Route path="/settings" element={<Navigate to="/workspace/settings" replace />} />
       <Route path="*" element={<Navigate to="/workspace/dashboard" replace />} />
     </Routes>
