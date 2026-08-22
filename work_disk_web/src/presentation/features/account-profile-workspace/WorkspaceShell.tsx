@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { Footer } from '../../footer/Footer'
 
 export function WorkspaceShell() {
   return (
@@ -17,6 +18,8 @@ export function WorkspaceShell() {
       <section className="wd-workspace-content">
         <Outlet />
       </section>
+
+      <Footer />
     </main>
   )
 }
