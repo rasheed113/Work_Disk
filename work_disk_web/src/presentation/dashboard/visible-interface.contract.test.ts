@@ -3,13 +3,13 @@ import { createDefaultDashboardPreferences, DASHBOARD_CARD_DEFINITIONS, DEFAULT_
 import { normalizeDashboardOrder } from './state/preferences'
 
 describe('Work_Disk visible interface contract', () => {
-  it('keeps the locked twelve-boundary registry while exposing only six content surfaces', () => {
+  it('keeps the locked twelve-boundary registry while exposing only five content surfaces', () => {
     expect(DASHBOARD_CARD_DEFINITIONS).toHaveLength(12)
     expect(DEFAULT_DASHBOARD_ORDER).toHaveLength(12)
     expect(new Set(DEFAULT_DASHBOARD_ORDER).size).toBe(12)
-    expect(DASHBOARD_CARD_DEFINITIONS.filter((card) => card.contentSurface)).toHaveLength(6)
+    expect(DASHBOARD_CARD_DEFINITIONS.filter((card) => card.contentSurface)).toHaveLength(5)
     expect(DASHBOARD_CARD_DEFINITIONS.filter((card) => !card.contentSurface).map((card) => card.id)).toEqual([
-      'profile', 'smart-clock', 'header', 'navigation', 'custom-dashboard', 'cards-gallery',
+      'profile', 'smart-clock', 'ticker', 'header', 'navigation', 'custom-dashboard', 'cards-gallery',
     ])
   })
 
@@ -25,7 +25,7 @@ describe('Work_Disk visible interface contract', () => {
   it('does not expose registry-only boundaries as Dashboard content', () => {
     const registryOnly = DASHBOARD_CARD_DEFINITIONS.filter((card) => !card.contentSurface)
     expect(registryOnly.every((card) => card.removable === false)).toBe(true)
-    expect(registryOnly.map((card) => card.title)).toEqual(['Profile', 'Smart Clock', 'Header', 'Navigation', 'Custom Dashboard', 'Cards Gallery'])
+    expect(registryOnly.map((card) => card.title)).toEqual(['Profile', 'Smart Clock', 'Status Strip', 'Header', 'Navigation', 'Custom Dashboard', 'Cards Gallery'])
   })
 
   it('migrates unknown legacy identifiers while preserving the locked registry boundaries', () => {
