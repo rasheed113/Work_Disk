@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
 import type { DashboardCardId, DashboardGridColumns, DashboardPreferences, DashboardViewMode } from '../model/dashboard'
-import { createDefaultDashboardPreferences } from '../model/dashboard'
+import { createDefaultDashboardPreferences, DEFAULT_DASHBOARD_ORDER } from '../model/dashboard'
 
 const STORAGE_KEY = 'work-disk.dashboard.preferences.v1'
 
 function isCardId(value: unknown): value is DashboardCardId {
   return typeof value === 'string' && [
-    'header', 'profile', 'navigation', 'smart-clock', 'ticker', 'quick-actions',
-    'summary', 'activity', 'notifications', 'capabilities', 'customisation', 'cards-gallery',
+    'profile', 'smart-clock', 'ticker', 'quick-actions', 'summary', 'activity', 'notifications', 'capabilities',
   ].includes(value)
 }
 
@@ -19,6 +18,19 @@ function isGridColumns(value: unknown): value is DashboardGridColumns {
   return value === 2 || value === 3 || value === 4
 }
 
+export function normalizeDashboardOrder(value: unknown): DashboardCardId[] {
+  const result: DashboardCardId[] = []
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (isCardId(item) && !result.includes(item)) result.push(item)
+    }
+  }
+  for (const id of DEFAULT_DASHBOARD_ORDER) {
+    if (!result.includes(id)) result.push(id)
+  }
+  return result
+}
+
 function readPreferences(): DashboardPreferences {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
@@ -28,7 +40,7 @@ function readPreferences(): DashboardPreferences {
     return {
       hidden: Array.isArray(parsed.hidden) ? parsed.hidden.filter(isCardId) : base.hidden,
       pinned: Array.isArray(parsed.pinned) ? parsed.pinned.filter(isCardId) : base.pinned,
-      order: Array.isArray(parsed.order) ? parsed.order.filter(isCardId) : base.order,
+      order: normalizeDashboardOrder(parsed.order),
       viewMode: isViewMode(parsed.viewMode) ? parsed.viewMode : base.viewMode,
       gridColumns: isGridColumns(parsed.gridColumns) ? parsed.gridColumns : base.gridColumns,
     }

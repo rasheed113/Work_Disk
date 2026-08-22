@@ -1,20 +1,31 @@
 import { describe, expect, it } from 'vitest'
 import { createDefaultDashboardPreferences, DASHBOARD_CARD_DEFINITIONS, DEFAULT_DASHBOARD_ORDER } from './model/dashboard'
+import { normalizeDashboardOrder } from './state/preferences'
 
 describe('Work_Disk visible interface contract', () => {
-  it('exposes the locked twelve-card dashboard surface', () => {
-    expect(DASHBOARD_CARD_DEFINITIONS).toHaveLength(12)
-    expect(DEFAULT_DASHBOARD_ORDER).toHaveLength(12)
-    expect(new Set(DEFAULT_DASHBOARD_ORDER).size).toBe(12)
+  it('exposes only user-facing dashboard content cards', () => {
+    expect(DASHBOARD_CARD_DEFINITIONS).toHaveLength(8)
+    expect(DEFAULT_DASHBOARD_ORDER).toHaveLength(8)
+    expect(new Set(DEFAULT_DASHBOARD_ORDER).size).toBe(8)
+    expect(DASHBOARD_CARD_DEFINITIONS.every((card) => card.removable)).toBe(true)
   })
 
-  it('keeps dashboard customisation non-destructive', () => {
-    const customisation = DASHBOARD_CARD_DEFINITIONS.find((card) => card.id === 'customisation')
-    const gallery = DASHBOARD_CARD_DEFINITIONS.find((card) => card.id === 'cards-gallery')
+  it('does not model navigation, customization or card registry surfaces as dashboard cards', () => {
+    const ids = new Set(DEFAULT_DASHBOARD_ORDER)
+    expect(ids.has('profile')).toBe(true)
+    expect(ids.has('smart-clock')).toBe(true)
+    expect(ids.has('ticker')).toBe(true)
+    expect(ids.has('quick-actions')).toBe(true)
+    expect(ids.has('summary')).toBe(true)
+    expect(ids.has('activity')).toBe(true)
+    expect(ids.has('notifications')).toBe(true)
+    expect(ids.has('capabilities')).toBe(true)
+  })
 
-    expect(customisation?.removable).toBe(false)
-    expect(gallery?.removable).toBe(false)
-    expect(DASHBOARD_CARD_DEFINITIONS.every((card) => card.removable || card.id === 'header' || card.id === 'navigation' || card.id === 'customisation' || card.id === 'cards-gallery')).toBe(true)
+  it('migrates legacy non-content card ids out of persisted order without losing valid content order', () => {
+    expect(normalizeDashboardOrder([
+      'header', 'profile', 'navigation', 'smart-clock', 'customisation', 'ticker', 'cards-gallery', 'profile', 'unknown',
+    ])).toEqual(['profile', 'smart-clock', 'ticker', 'quick-actions', 'summary', 'activity', 'notifications', 'capabilities'])
   })
 
   it('defaults the presentation view to Grid with two columns', () => {
@@ -52,7 +63,7 @@ describe('Work_Disk visible interface contract', () => {
     expect(preferences.pinned).toEqual(pinnedBefore)
   })
 
-  it('keeps the mobile presentation policy presentation-only', () => {
+  it('keeps mobile density presentation-only', () => {
     const preferences = createDefaultDashboardPreferences()
     preferences.viewMode = 'grid'
     preferences.gridColumns = 4
