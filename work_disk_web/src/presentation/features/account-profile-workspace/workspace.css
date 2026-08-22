@@ -1,4 +1,4 @@
-.wd-workspace-shell { min-height: 100vh; padding: 0; background: var(--wd-color-background, #f5f8fc); }
+.wd-workspace-shell { min-height: 100vh; padding: 0; background: radial-gradient(circle at 50% 0%, #ffffff 0%, #f8fcff 45%, #eaf5ff 100%); }
 .wd-workspace-header { display: flex; align-items: center; justify-content: space-between; gap: 28px; min-height: 104px; padding: 8px 4px 20px; border-bottom: 1px solid rgb(255 255 255 / 16%); background: linear-gradient(135deg, #071a33 0%, #0b2a4a 55%, #123b61 100%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%), 0 10px 24px rgb(0 8 18 / 18%); overflow: visible; }
 .wd-workspace-brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .wd-workspace-brand__mark { display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border: 1px solid rgb(118 203 255 / 55%); border-radius: 12px; background: linear-gradient(145deg, #49b6ff 0%, #1468b0 52%, #073761 100%); color: #eaf8ff; font-family: Impact, Haettenschweiler, "Arial Black", sans-serif; font-size: 0.82rem; font-weight: 900; letter-spacing: 0.05em; text-shadow: 0 1px 0 #bfeeff, 0 2px 0 #07508f, 0 4px 0 #03294d, 0 6px 10px rgb(0 0 0 / 42%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 65%), inset 0 -3px 0 rgb(0 35 70 / 48%), 0 4px 0 #04294b, 0 9px 18px rgb(0 8 18 / 38%); transform: perspective(600px) rotateX(5deg) rotateY(-3deg); }
@@ -7,7 +7,6 @@
 .wd-workspace-brand__subtitle { display: block; color: #ffd27a; font-family: Georgia, "Times New Roman", serif; font-size: clamp(0.72rem, 1.4vw, 0.9rem); font-weight: 900; font-style: italic; letter-spacing: 0.32em; line-height: 1.05; text-transform: uppercase; text-shadow: 0 1px 0 #fff0c7, 0 2px 0 #9c671c, 0 4px 7px rgb(0 0 0 / 45%); transform: perspective(700px) rotateX(7deg); }
 .wd-workspace-header__description { max-width: 38rem; margin: 30px 0 0; color: #b8efff; font-family: "Trebuchet MS", Arial, sans-serif; font-size: clamp(0.66rem, 1.25vw, 0.82rem); font-weight: 700; letter-spacing: 0.025em; line-height: 1.45; text-align: right; align-self: flex-start; text-shadow: 0 1px 0 #06365a, 0 3px 7px rgb(0 0 0 / 48%); }
 .wd-workspace-content { min-width: 0; }
-.wd-dashboard-shell { background: radial-gradient(circle at 50% 0%, #123b61 0%, #0b2543 34%, #061426 100%); color: #e9f5ff; }
 .wd-feature-surface { display: grid; gap: 18px; }
 .wd-feature-surface__eyebrow, .wd-feature-card__label { margin: 0 0 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .wd-feature-card { display: grid; gap: 16px; padding: 22px; border: 1px solid var(--wd-color-border, #d9e2ec); border-radius: 18px; background: var(--wd-color-surface, #ffffff); box-shadow: 0 14px 36px rgb(26 49 78 / 10%); }
