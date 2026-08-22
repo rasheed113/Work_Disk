@@ -3,29 +3,26 @@ import { createDefaultDashboardPreferences, DASHBOARD_CARD_DEFINITIONS, DEFAULT_
 import { normalizeDashboardOrder } from './state/preferences'
 
 describe('Work_Disk visible interface contract', () => {
-  it('exposes only user-facing dashboard content cards', () => {
-    expect(DASHBOARD_CARD_DEFINITIONS).toHaveLength(8)
-    expect(DEFAULT_DASHBOARD_ORDER).toHaveLength(8)
-    expect(new Set(DEFAULT_DASHBOARD_ORDER).size).toBe(8)
-    expect(DASHBOARD_CARD_DEFINITIONS.every((card) => card.removable)).toBe(true)
+  it('keeps the locked twelve-boundary registry while exposing only eight content surfaces', () => {
+    expect(DASHBOARD_CARD_DEFINITIONS).toHaveLength(12)
+    expect(DEFAULT_DASHBOARD_ORDER).toHaveLength(12)
+    expect(new Set(DEFAULT_DASHBOARD_ORDER).size).toBe(12)
+    expect(DASHBOARD_CARD_DEFINITIONS.filter((card) => card.contentSurface)).toHaveLength(8)
+    expect(DASHBOARD_CARD_DEFINITIONS.filter((card) => !card.contentSurface).map((card) => card.id)).toEqual([
+      'header', 'navigation', 'custom-dashboard', 'cards-gallery',
+    ])
   })
 
-  it('does not model navigation, customization or card registry surfaces as dashboard cards', () => {
-    const ids = new Set(DEFAULT_DASHBOARD_ORDER)
-    expect(ids.has('profile')).toBe(true)
-    expect(ids.has('smart-clock')).toBe(true)
-    expect(ids.has('ticker')).toBe(true)
-    expect(ids.has('quick-actions')).toBe(true)
-    expect(ids.has('summary')).toBe(true)
-    expect(ids.has('activity')).toBe(true)
-    expect(ids.has('notifications')).toBe(true)
-    expect(ids.has('capabilities')).toBe(true)
+  it('does not expose registry-only boundaries as Dashboard content', () => {
+    const registryOnly = DASHBOARD_CARD_DEFINITIONS.filter((card) => !card.contentSurface)
+    expect(registryOnly.every((card) => card.removable === false)).toBe(true)
+    expect(registryOnly.map((card) => card.title)).toEqual(['Header', 'Navigation', 'Custom Dashboard', 'Cards Gallery'])
   })
 
-  it('migrates legacy non-content card ids out of persisted order without losing valid content order', () => {
+  it('migrates unknown legacy identifiers while preserving the locked registry boundaries', () => {
     expect(normalizeDashboardOrder([
       'header', 'profile', 'navigation', 'smart-clock', 'customisation', 'ticker', 'cards-gallery', 'profile', 'unknown',
-    ])).toEqual(['profile', 'smart-clock', 'ticker', 'quick-actions', 'summary', 'activity', 'notifications', 'capabilities'])
+    ])).toEqual([...DEFAULT_DASHBOARD_ORDER])
   })
 
   it('defaults the presentation view to Grid with two columns', () => {
