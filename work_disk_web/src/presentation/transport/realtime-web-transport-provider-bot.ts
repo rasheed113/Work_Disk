@@ -1,13 +1,11 @@
 import type {
+  TransportContext,
   WebTransportProvider,
   WebTransportRequest,
   WebTransportResponse,
 } from './realtime-web-transport'
 
-export interface TransportContext {
-  readonly sessionToken?: string
-  readonly accountId?: string
-}
+export type { TransportContext } from './realtime-web-transport'
 
 export interface ProviderRequest<TPayload> {
   readonly requestId: string
@@ -51,19 +49,32 @@ export class HttpWebTransportProvider<TRequest, TResponse>
     request: WebTransportRequest<TRequest>,
   ): Promise<WebTransportResponse<TResponse>> {
     const providerRequest: ProviderRequest<TRequest> = {
-      requestId: crypto.randomUUID(),
+      requestId: request.correlationId,
       operation: request.operation,
       payload: request.payload,
+      context: request.context,
     }
 
     const envelope = await this.client.request<TRequest, TResponse>(
       providerRequest,
     )
 
+    if (envelope.requestId !== request.correlationId) {
+      throw new Error('WEB_TRANSPORT_CORRELATION_MISMATCH')
+    }
+
     if (envelope.state === 'ERROR') {
       throw new Error(
         envelope.error?.code ?? 'WEB_TRANSPORT_APPLICATION_ERROR',
       )
+    }
+
+    if (envelope.state === 'AUTHORITATIVE' && envelope.payload === null) {
+      throw new Error('WEB_TRANSPORT_INVALID_AUTHORITATIVE_PAYLOAD')
+    }
+
+    if (envelope.state === 'EMPTY' && envelope.payload !== null) {
+      throw new Error('WEB_TRANSPORT_INVALID_EMPTY_PAYLOAD')
     }
 
     return {
