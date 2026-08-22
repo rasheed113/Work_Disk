@@ -25,17 +25,22 @@
   border-radius: 14px;
   cursor: pointer;
   font: inherit;
-  font-weight: 750;
-  letter-spacing: 0.01em;
-  color: rgba(255, 255, 255, 0.9);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.94);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.055));
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45),
+    0 2px 0 rgba(0, 0, 0, 0.48),
+    0 3px 0 rgba(0, 0, 0, 0.24),
+    0 5px 10px rgba(0, 0, 0, 0.34);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -3px 0 rgba(0, 0, 0, 0.24),
     0 5px 0 rgba(0, 0, 0, 0.3),
     0 8px 18px rgba(0, 0, 0, 0.22);
   transform: translateY(0);
-  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease, border-color 120ms ease;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease, border-color 120ms ease, text-shadow 120ms ease;
   overflow: hidden;
 }
 
@@ -53,6 +58,11 @@
   filter: brightness(1.12);
   transform: translateY(-2px);
   border-color: rgba(255, 255, 255, 0.28);
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55),
+    0 2px 0 rgba(0, 0, 0, 0.5),
+    0 4px 0 rgba(0, 0, 0, 0.28),
+    0 6px 14px rgba(0, 0, 0, 0.38);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.24),
     inset 0 -3px 0 rgba(0, 0, 0, 0.24),
@@ -62,6 +72,10 @@
 
 .bottom-navigation-board__button:active {
   transform: translateY(3px);
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.3),
+    0 1px 0 rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.3);
   box-shadow:
     inset 0 2px 5px rgba(0, 0, 0, 0.28),
     0 2px 0 rgba(0, 0, 0, 0.3),
@@ -69,10 +83,15 @@
 }
 
 .bottom-navigation-board__button--active {
-  font-weight: 850;
+  font-weight: 900;
   color: #fff;
   border-color: rgba(120, 220, 150, 0.72);
   background: linear-gradient(180deg, rgba(72, 190, 112, 0.78), rgba(24, 112, 62, 0.72));
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.58),
+    0 2px 0 rgba(0, 55, 25, 0.78),
+    0 4px 0 rgba(0, 45, 20, 0.55),
+    0 6px 12px rgba(0, 30, 15, 0.42);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     inset 0 -3px 0 rgba(0, 55, 25, 0.42),
