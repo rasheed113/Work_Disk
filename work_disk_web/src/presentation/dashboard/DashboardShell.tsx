@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Activity } from './components/Activity'
 import { Capabilities } from './components/Capabilities'
 import { CardsGallery } from './components/CardsGallery'
@@ -20,25 +20,33 @@ const GRID_COLUMNS: readonly DashboardGridColumns[] = [2, 3, 4]
 
 export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel }) {
   const { preferences, hide, unhide, togglePin, reorder, setViewMode, setGridColumns, reset } = useDashboardPreferences()
+  const [isCustomizing, setIsCustomizing] = useState(false)
   const order = useMemo(() => preferences.order.filter((id, index, ids) => ids.indexOf(id) === index), [preferences.order])
   const isHidden = (id: DashboardCardId) => preferences.hidden.includes(id)
-  const controls = (id: DashboardCardId) => ({ hidden: isHidden(id), pinned: preferences.pinned.includes(id), onHide: () => hide(id), onPin: () => togglePin(id), onMoveUp: () => reorder(id, -1), onMoveDown: () => reorder(id, 1) })
+  const controls = (id: DashboardCardId) => isCustomizing
+    ? { hidden: isHidden(id), pinned: preferences.pinned.includes(id), onHide: () => hide(id), onPin: () => togglePin(id), onMoveUp: () => reorder(id, -1), onMoveDown: () => reorder(id, 1) }
+    : { hidden: isHidden(id), pinned: preferences.pinned.includes(id) }
 
   return <main className="wd-dashboard-shell" id="dashboard">
     <Header profile={model.profile} />
     <Navigation />
-    <div className="wd-dashboard-toolbar" aria-label="Dashboard view settings">
-      <span className="wd-dashboard-toolbar__label">View</span>
-      <div className="wd-dashboard-view-toggle" role="group" aria-label="Dashboard view mode">
-        <button type="button" className={preferences.viewMode === 'grid' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'grid'} onClick={() => setViewMode('grid')}>Grid</button>
-        <button type="button" className={preferences.viewMode === 'list' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'list'} onClick={() => setViewMode('list')}>List</button>
-      </div>
-      {preferences.viewMode === 'grid' && <label className="wd-dashboard-grid-columns">
-        <span>Columns</span>
-        <select aria-label="Grid columns" value={preferences.gridColumns} onChange={(event) => setGridColumns(Number(event.target.value) as DashboardGridColumns)}>
-          {GRID_COLUMNS.map((columns) => <option key={columns} value={columns}>{columns}</option>)}
-        </select>
-      </label>}
+    <div className={`wd-dashboard-toolbar${isCustomizing ? ' is-customizing' : ''}`} aria-label="Dashboard presentation settings">
+      <button type="button" className="wd-dashboard-customize-toggle" aria-pressed={isCustomizing} onClick={() => setIsCustomizing((current) => !current)}>
+        {isCustomizing ? 'Done' : 'Customize'}
+      </button>
+      {isCustomizing && <>
+        <span className="wd-dashboard-toolbar__label">View</span>
+        <div className="wd-dashboard-view-toggle" role="group" aria-label="Dashboard view mode">
+          <button type="button" className={preferences.viewMode === 'grid' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'grid'} onClick={() => setViewMode('grid')}>Grid</button>
+          <button type="button" className={preferences.viewMode === 'list' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'list'} onClick={() => setViewMode('list')}>List</button>
+        </div>
+        {preferences.viewMode === 'grid' && <label className="wd-dashboard-grid-columns">
+          <span>Columns</span>
+          <select aria-label="Grid columns" value={preferences.gridColumns} onChange={(event) => setGridColumns(Number(event.target.value) as DashboardGridColumns)}>
+            {GRID_COLUMNS.map((columns) => <option key={columns} value={columns}>{columns}</option>)}
+          </select>
+        </label>}
+      </>}
     </div>
     <div className={`wd-dashboard-grid wd-dashboard-grid--${preferences.viewMode} wd-dashboard-grid--columns-${preferences.gridColumns}`}>
       {order.map((id) => {
