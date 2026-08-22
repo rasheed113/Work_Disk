@@ -23,7 +23,7 @@ export function Customisation({ definitions, order, hidden, pinned, onHide, onUn
       <button type="button" onClick={onReset}>Reset to Default</button>
     </div>
     <div className="wd-customisation-list">
-      {definitions.filter((definition) => definition.removable).map((definition) => {
+      {definitions.filter((definition) => definition.contentSurface).map((definition) => {
         const index = order.indexOf(definition.id)
         const isHidden = hidden.includes(definition.id)
         const isPinned = pinned.includes(definition.id)
