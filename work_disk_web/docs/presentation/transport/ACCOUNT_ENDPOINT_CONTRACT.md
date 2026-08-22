@@ -1,7 +1,9 @@
 # Account Endpoint Contract
 
 ## Status
-DESIGNED / CONTRACT LOCKED
+CONTRACT LOCKED / ENDPOINT HANDLER PENDING
+
+The shared Web HTTP runtime transport provider is implemented. The Account endpoint handler remains a separate integration gate and must not be represented as complete until it delegates to BOT-01.
 
 ## Operation
 `account.get`
@@ -51,3 +53,15 @@ The transport serialization contains only fields already exposed by the BOT-01 A
 
 ## Integration Boundary
 HTTP provider BOT → this endpoint handler → BOT-01 `AccountService::getAccount(accountId)` → authoritative Account read model → serialized response → AccountPresentationAdapter → Settings Account Page Property.
+
+## Current Gate
+Completed:
+- shared provider contract;
+- browser Fetch runtime transport client;
+- provider correlation and envelope validation;
+- provider tests and transport documentation.
+
+Pending:
+- server/runtime endpoint handler for `POST /api/v1/account/get`;
+- authoritative delegation to BOT-01 `AccountService::getAccount(accountId)`;
+- end-to-end Account read verification through Settings.
