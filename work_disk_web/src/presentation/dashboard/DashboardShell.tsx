@@ -40,16 +40,16 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
         </div>}
       </div>
     </div>
-    <section className="wd-dashboard-profile-context" aria-label="Profile context">
+    {model.profile && <section className="wd-dashboard-profile-context" aria-label="Profile context">
       <div className="wd-dashboard-profile-context__identity">
         <div className="wd-dashboard-profile-context__cover" aria-hidden="true" />
         <div className="wd-dashboard-profile-context__details">
-          <div className="wd-dashboard-profile-context__avatar" aria-hidden="true">{model.profile?.displayName?.slice(0, 1).toUpperCase() ?? 'P'}</div>
-          <div><strong>{model.profile?.displayName ?? 'Profile'}</strong><span>{model.profile?.accountId ?? 'Account ID unavailable'}</span>{model.profile?.accountId && <button type="button" onClick={() => navigator.clipboard?.writeText(model.profile!.accountId)}>Copy ID</button>}</div>
+          <div className="wd-dashboard-profile-context__avatar" aria-hidden="true">{model.profile.displayName?.slice(0, 1).toUpperCase()}</div>
+          <div><strong>{model.profile.displayName}</strong><span>{model.profile.accountId}</span>{model.profile.accountId && <button type="button" onClick={() => navigator.clipboard?.writeText(model.profile!.accountId)}>Copy ID</button>}</div>
         </div>
       </div>
       <div className="wd-dashboard-profile-context__clock"><SmartClock /></div>
-    </section>
+    </section>}
     <StatusStrip items={model.statusStrip} />
     {isCustomizing && <Customisation
       definitions={DASHBOARD_CARD_DEFINITIONS}
