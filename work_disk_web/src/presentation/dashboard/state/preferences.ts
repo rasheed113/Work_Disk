@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
 import type { DashboardCardId, DashboardGridColumns, DashboardPreferences, DashboardViewMode } from '../model/dashboard'
-import { createDefaultDashboardPreferences, DEFAULT_DASHBOARD_ORDER } from '../model/dashboard'
+import { createDefaultDashboardPreferences, DASHBOARD_CARD_DEFINITIONS, DEFAULT_DASHBOARD_ORDER } from '../model/dashboard'
 
 const STORAGE_KEY = 'work-disk.dashboard.preferences.v1'
+const REGISTRY_IDS = new Set(DASHBOARD_CARD_DEFINITIONS.map((definition) => definition.id))
+const CONTENT_IDS = new Set(DASHBOARD_CARD_DEFINITIONS.filter((definition) => definition.contentSurface).map((definition) => definition.id))
 
-function isCardId(value: unknown): value is DashboardCardId {
-  return typeof value === 'string' && [
-    'profile', 'smart-clock', 'ticker', 'quick-actions', 'summary', 'activity', 'notifications', 'capabilities',
-  ].includes(value)
+function isRegistryCardId(value: unknown): value is DashboardCardId {
+  return typeof value === 'string' && REGISTRY_IDS.has(value as DashboardCardId)
+}
+
+function isContentCardId(value: unknown): value is DashboardCardId {
+  return typeof value === 'string' && CONTENT_IDS.has(value as DashboardCardId)
 }
 
 function isViewMode(value: unknown): value is DashboardViewMode {
@@ -22,7 +26,7 @@ export function normalizeDashboardOrder(value: unknown): DashboardCardId[] {
   const result: DashboardCardId[] = []
   if (Array.isArray(value)) {
     for (const item of value) {
-      if (isCardId(item) && !result.includes(item)) result.push(item)
+      if (isRegistryCardId(item) && !result.includes(item)) result.push(item)
     }
   }
   for (const id of DEFAULT_DASHBOARD_ORDER) {
@@ -38,8 +42,8 @@ function readPreferences(): DashboardPreferences {
     const parsed = JSON.parse(raw) as Partial<DashboardPreferences>
     const base = createDefaultDashboardPreferences()
     return {
-      hidden: Array.isArray(parsed.hidden) ? parsed.hidden.filter(isCardId) : base.hidden,
-      pinned: Array.isArray(parsed.pinned) ? parsed.pinned.filter(isCardId) : base.pinned,
+      hidden: Array.isArray(parsed.hidden) ? parsed.hidden.filter(isContentCardId) : base.hidden,
+      pinned: Array.isArray(parsed.pinned) ? parsed.pinned.filter(isContentCardId) : base.pinned,
       order: normalizeDashboardOrder(parsed.order),
       viewMode: isViewMode(parsed.viewMode) ? parsed.viewMode : base.viewMode,
       gridColumns: isGridColumns(parsed.gridColumns) ? parsed.gridColumns : base.gridColumns,
@@ -63,12 +67,13 @@ export function useDashboardPreferences() {
     pinned: current.pinned.includes(id) ? current.pinned.filter((item) => item !== id) : [...current.pinned, id],
   }))
   const reorder = (id: DashboardCardId, direction: -1 | 1) => setPreferences((current) => {
-    const order = [...current.order]
-    const index = order.indexOf(id)
+    const contentOrder = current.order.filter((item) => CONTENT_IDS.has(item))
+    const registryOnlyOrder = current.order.filter((item) => !CONTENT_IDS.has(item))
+    const index = contentOrder.indexOf(id)
     const target = index + direction
-    if (index < 0 || target < 0 || target >= order.length) return current
-    ;[order[index], order[target]] = [order[target], order[index]]
-    return { ...current, order }
+    if (index < 0 || target < 0 || target >= contentOrder.length) return current
+    ;[contentOrder[index], contentOrder[target]] = [contentOrder[target], contentOrder[index]]
+    return { ...current, order: [...contentOrder, ...registryOnlyOrder] }
   })
   const setViewMode = (viewMode: DashboardViewMode) => setPreferences((current) => ({ ...current, viewMode }))
   const setGridColumns = (gridColumns: DashboardGridColumns) => setPreferences((current) => ({ ...current, gridColumns }))
