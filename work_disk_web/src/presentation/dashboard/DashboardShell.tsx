@@ -12,13 +12,14 @@ import { QuickActions } from './components/QuickActions'
 import { SmartClock } from './components/SmartClock'
 import { Summary } from './components/Summary'
 import { Ticker } from './components/Ticker'
-import { DASHBOARD_CARD_DEFINITIONS, type DashboardCardId, type DashboardModel } from './model/dashboard'
+import { DASHBOARD_CARD_DEFINITIONS, type DashboardCardId, type DashboardGridColumns, type DashboardModel } from './model/dashboard'
 import { useDashboardPreferences } from './state/preferences'
 
 const EMPTY_MODEL: DashboardModel = { profile: null, capabilities: [], activities: [], notifications: [], summary: [] }
+const GRID_COLUMNS: readonly DashboardGridColumns[] = [2, 3, 4]
 
 export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel }) {
-  const { preferences, hide, unhide, togglePin, reorder, setViewMode, reset } = useDashboardPreferences()
+  const { preferences, hide, unhide, togglePin, reorder, setViewMode, setGridColumns, reset } = useDashboardPreferences()
   const order = useMemo(() => preferences.order.filter((id, index, ids) => ids.indexOf(id) === index), [preferences.order])
   const isHidden = (id: DashboardCardId) => preferences.hidden.includes(id)
   const controls = (id: DashboardCardId) => ({ hidden: isHidden(id), pinned: preferences.pinned.includes(id), onHide: () => hide(id), onPin: () => togglePin(id), onMoveUp: () => reorder(id, -1), onMoveDown: () => reorder(id, 1) })
@@ -26,14 +27,20 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
   return <main className="wd-dashboard-shell" id="dashboard">
     <Header profile={model.profile} />
     <Navigation />
-    <div className="wd-dashboard-toolbar" aria-label="Dashboard view mode">
+    <div className="wd-dashboard-toolbar" aria-label="Dashboard view settings">
       <span className="wd-dashboard-toolbar__label">View</span>
       <div className="wd-dashboard-view-toggle" role="group" aria-label="Dashboard view mode">
         <button type="button" className={preferences.viewMode === 'grid' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'grid'} onClick={() => setViewMode('grid')}>Grid</button>
         <button type="button" className={preferences.viewMode === 'list' ? 'is-active' : ''} aria-pressed={preferences.viewMode === 'list'} onClick={() => setViewMode('list')}>List</button>
       </div>
+      {preferences.viewMode === 'grid' && <label className="wd-dashboard-grid-columns">
+        <span>Columns</span>
+        <select aria-label="Grid columns" value={preferences.gridColumns} onChange={(event) => setGridColumns(Number(event.target.value) as DashboardGridColumns)}>
+          {GRID_COLUMNS.map((columns) => <option key={columns} value={columns}>{columns}</option>)}
+        </select>
+      </label>}
     </div>
-    <div className={`wd-dashboard-grid wd-dashboard-grid--${preferences.viewMode}`}>
+    <div className={`wd-dashboard-grid wd-dashboard-grid--${preferences.viewMode} wd-dashboard-grid--columns-${preferences.gridColumns}`}>
       {order.map((id) => {
         const card = DASHBOARD_CARD_DEFINITIONS.find((item) => item.id === id)
         if (!card) return null
