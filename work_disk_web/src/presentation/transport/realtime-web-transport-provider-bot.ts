@@ -34,12 +34,6 @@ export interface HttpTransportClient {
   ): Promise<ProviderEnvelope<TResponse>>
 }
 
-/**
- * Shared runtime provider BOT.
- *
- * It owns only the HTTP transport boundary. Domain authority remains in the
- * operation's authoritative BOT/service and presentation remains downstream.
- */
 export class HttpWebTransportProvider<TRequest, TResponse>
   implements WebTransportProvider<TRequest, TResponse>
 {
@@ -50,9 +44,15 @@ export class HttpWebTransportProvider<TRequest, TResponse>
   async request(
     request: WebTransportRequest<TRequest>,
   ): Promise<WebTransportResponse<TResponse>> {
-    const envelope = await this.client.request<TResponse>({
+    const providerRequest: ProviderRequest<TRequest> = {
+      requestId: crypto.randomUUID(),
       operation: request.operation,
       payload: request.payload,
+    }
+
+    const envelope = await this.client.request<TResponse>({
+      operation: providerRequest.operation,
+      payload: providerRequest.payload,
     })
 
     if (envelope.state === 'ERROR') {
