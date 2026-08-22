@@ -140,7 +140,19 @@ Generic component infrastructure does not redefine Dashboard's 12 core boundarie
 
 No account/profile persistence, authentication, permission grants, or database access is owned by this presentation surface.
 
-## 9. Documentation Areas
+## 9. Real-Time Web Transport — Current Foundation
+- Shared Web transport architecture boundary — **DESIGNED**
+- Shared Web transport boundary rules — **DESIGNED**
+- Shared Web transport contract `WEB-TRANSPORT-01` — **DESIGNED**
+- Provider-neutral TypeScript transport interface — **IMPLEMENTED / NOT RUNTIME-WIRED**
+- No-fake unavailable provider — **IMPLEMENTED / TESTED**
+- Concrete HTTP/WebSocket/WASM runtime provider — **DEFERRED until authoritative runtime protocol is established**
+- Profile BOT-02 transport bridge — **BLOCKED by missing concrete authoritative provider**
+
+### Locked transport rule
+One shared Web transport boundary serves multiple authoritative BOT/service contracts. Each page/surface retains its own presentation adapter. The transport owns protocol/connection concerns only and never becomes a domain authority.
+
+## 10. Documentation Areas
 - Account documentation — **IMPLEMENTED**
 - Profile documentation — **IMPLEMENTED**
 - Tool documentation — **IMPLEMENTED**
@@ -151,8 +163,9 @@ No account/profile persistence, authentication, permission grants, or database a
 - Reusable component system documentation — **IMPLEMENTED**
 - Account/Profile + Workspace feature documentation — **IMPLEMENTED**
 - Profile Presentation Adapter architecture documentation — **IMPLEMENTED**
+- Real-Time Web Transport architecture/boundary/contract documentation — **DESIGNED**
 
-## 10. Current Audit Notes
+## 11. Current Audit Notes
 - This menu is an inventory, not a replacement for individual architecture contracts.
 - A feature must not be marked IMPLEMENTED merely because it was discussed or designed.
 - Duplicate or overlapping capabilities must be resolved at the architecture/boundary level before adding another Tool-Bot.
@@ -166,8 +179,9 @@ No account/profile persistence, authentication, permission grants, or database a
 - Settings is only registered as a workspace destination; its feature implementation remains deferred.
 - Profile Presentation Adapter is recorded only after PR #80 was merged to `main` and Main Verification workflow #16 completed successfully.
 - The Profile Presentation Adapter is a presentation boundary only; it does not replace or modify BOT-01/BOT-02 authority and does not claim to be the transport/application integration layer.
+- Real-Time Web Transport is currently a provider-neutral boundary; it is not falsely recorded as a live network connection.
 
-## 11. Update Rule
+## 12. Update Rule
 Every future addition follows:
 
 **Architecture → Attack → Boundary → Blueprint → Contract → Roadmap → Implementation → Tests → Docs → PR → Review → Merge → Main Verification → Master Menu Update**
@@ -176,7 +190,10 @@ The Master Menu answers:
 
 > **What does Work_Disk actually have right now?**
 
-## 12. Change Log
+## 13. Change Log
+### v1.9 — Real-Time Web Transport boundary foundation
+Recorded the shared Web transport architecture/boundary/contract, provider-neutral TypeScript boundary, no-fake unavailable provider and transport tests. Concrete runtime provider remains deferred until an authoritative HTTP/WebSocket/WASM protocol is established.
+
 ### v1.8 — Profile Presentation Adapter boundary
 Recorded the P0-2 domain/service contract audit, authoritative ProfileService read/assembly path, presentation adapter boundary, adapter implementation, anti-fabrication tests, architecture documentation, merged PR #80 and green Main Verification workflow #16. BOT-01 and BOT-02 boundaries remained unchanged.
 
