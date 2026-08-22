@@ -6,12 +6,14 @@ import { DashboardCard } from './components/DashboardCard'
 import { Notifications } from './components/Notifications'
 import { Profile } from './components/Profile'
 import { QuickActions } from './components/QuickActions'
+import { SearchCard } from './components/SearchCard'
 import { SmartClock } from './components/SmartClock'
 import { Summary } from './components/Summary'
 import { Ticker } from './components/Ticker'
 import { DASHBOARD_CARD_DEFINITIONS, type DashboardGridColumns, type DashboardModel } from './model/dashboard'
 import { useDashboardPreferences } from './state/preferences'
 import { Navigation } from './components/Navigation'
+import './components/SearchCard.css'
 
 const EMPTY_MODEL: DashboardModel = { profile: null, capabilities: [], activities: [], notifications: [], summary: [] }
 const GRID_COLUMNS: readonly DashboardGridColumns[] = [2, 3, 4]
@@ -20,6 +22,7 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
   const { preferences, hide, unhide, togglePin, reorder, setViewMode, setGridColumns, reset } = useDashboardPreferences()
   const [isCustomizing, setIsCustomizing] = useState(false)
   const [isMoreOpen, setIsMoreOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const order = useMemo(() => [...preferences.order], [preferences.order])
   const contentIds = useMemo(() => new Set(DASHBOARD_CARD_DEFINITIONS.filter((definition) => definition.contentSurface).map((definition) => definition.id)), [])
   const visibleOrder = useMemo(() => order.filter((id) => contentIds.has(id) && !preferences.hidden.includes(id)), [order, preferences.hidden, contentIds])
@@ -52,7 +55,7 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
       </div>
       <div className="wd-dashboard-profile-context__clock"><SmartClock /></div>
     </section>
-    <label className="wd-dashboard-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="Search Dashboard..." aria-label="Search Dashboard" /></label>
+    <SearchCard value={searchQuery} onChange={setSearchQuery} />
     {isCustomizing && <Customisation
       definitions={DASHBOARD_CARD_DEFINITIONS}
       order={customisationOrder}
