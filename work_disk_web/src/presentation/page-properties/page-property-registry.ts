@@ -14,6 +14,7 @@ export type PagePropertyId =
   | 'media'
   | 'more'
   | 'navigation'
+  | 'account'
 
 export interface PagePropertyDefinition {
   readonly id: PagePropertyId
@@ -39,6 +40,7 @@ export const PAGE_PROPERTIES: readonly PagePropertyDefinition[] = [
   { id: 'media', bot: 'Media access/acquisition capability', availability: 'AVAILABLE' },
   { id: 'more', bot: 'Capability Registry', availability: 'AVAILABLE' },
   { id: 'navigation', bot: 'Navigation Buttons BOT', availability: 'AVAILABLE' },
+  { id: 'account', bot: 'Account BOT-01', availability: 'AVAILABLE' },
 ] as const
 
 export function getPageProperty(id: PagePropertyId): PagePropertyDefinition | undefined {
