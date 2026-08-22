@@ -3,7 +3,6 @@ import { Activity } from './components/Activity'
 import { Capabilities } from './components/Capabilities'
 import { Customisation } from './components/Customisation'
 import { DashboardCard } from './components/DashboardCard'
-import { Header } from './components/Header'
 import { Notifications } from './components/Notifications'
 import { Profile } from './components/Profile'
 import { QuickActions } from './components/QuickActions'
@@ -27,7 +26,6 @@ export function DashboardShell({ model = EMPTY_MODEL }: { model?: DashboardModel
   const customisationOrder = useMemo(() => order.filter((id) => contentIds.has(id)), [order, contentIds])
 
   return <main className="wd-dashboard-shell" id="dashboard">
-    <Header profile={model.profile} />
     <div className="wd-dashboard-pagebar">
       <h1>Dashboard</h1>
       <div className="wd-dashboard-more">
