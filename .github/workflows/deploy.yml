@@ -12,6 +12,27 @@ jobs:
         with:
           node-version: 22
       - run: npm install
+      - name: Validate Firebase web configuration
+        shell: bash
+        env:
+          RAW_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+        run: |
+          set -euo pipefail
+          value="$(printf '%s' "$RAW_FIREBASE_API_KEY" | tr -d '\r\n')"
+          value="${value#\"}"
+          value="${value%\"}"
+          value="${value#\'}"
+          value="${value%\'}"
+          printf 'Firebase API key length: %s\n' "${#value}"
+          printf '%s' "$value" | sha256sum | cut -d' ' -f1
+          expected='da4926c58c63b74a2c0ec66f41e1e365ce9370c217824af13712904af5f8ad75'
+          actual="$(printf '%s' "$value" | sha256sum | cut -d' ' -f1)"
+          if [ "$actual" != "$expected" ]; then
+            echo 'Firebase API key secret does not match the current Firebase Web App key.'
+            echo 'Update VITE_FIREBASE_API_KEY in GitHub Actions secrets using the current Firebase Web App config.'
+            exit 1
+          fi
+          echo 'Firebase API key matches the current Firebase Web App config.'
       - run: npm run build
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
