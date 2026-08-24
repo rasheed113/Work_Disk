@@ -6,10 +6,7 @@ service cloud.firestore {
 
     match /posts/{postId} {
       allow read: if signedIn();
-      allow create: if signedIn()
-        && request.resource.data.authorId == request.auth.uid
-        && request.resource.data.likeCount == 0
-        && request.resource.data.audience == 'authenticated';
+      allow create: if signedIn() && request.resource.data.authorId == request.auth.uid && request.resource.data.likeCount == 0 && request.resource.data.audience == 'authenticated';
       allow update: if signedIn()
         && request.resource.data.authorId == resource.data.authorId
         && request.resource.data.content == resource.data.content
@@ -17,13 +14,9 @@ service cloud.firestore {
         && request.resource.data.likeCount == resource.data.likeCount + 1
         && getAfter(/databases/$(database)/documents/posts/$(postId)/likes/$(request.auth.uid)).data.actorId == request.auth.uid;
       allow delete: if signedIn() && resource.data.authorId == request.auth.uid;
-
       match /likes/{userId} {
         allow read: if signedIn();
-        allow create: if own(userId)
-          && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.postId == postId
-          && !exists(/databases/$(database)/documents/posts/$(postId)/likes/$(userId));
+        allow create: if own(userId) && request.resource.data.actorId == request.auth.uid && request.resource.data.postId == postId && !exists(/databases/$(database)/documents/posts/$(postId)/likes/$(userId));
         allow delete: if own(userId);
         allow update: if false;
       }
@@ -31,17 +24,8 @@ service cloud.firestore {
 
     match /activities/{activityId} {
       allow read: if signedIn() && resource.data.actorId == request.auth.uid;
-      allow create: if signedIn()
-        && request.resource.data.actorId == request.auth.uid
-        && request.resource.data.type == 'like'
-        && request.resource.data.targetPostId is string
-        && getAfter(/databases/$(database)/documents/posts/$(request.resource.data.targetPostId)/likes/$(request.auth.uid)).data.actorId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.actorId == request.auth.uid && request.resource.data.type == 'like' && request.resource.data.targetPostId is string && getAfter(/databases/$(database)/documents/posts/$(request.resource.data.targetPostId)/likes/$(request.auth.uid)).data.actorId == request.auth.uid;
       allow update, delete: if false;
-    }
-
-    match /users/{userId} {
-      allow read: if signedIn();
-      allow create, update, delete: if own(userId);
     }
   }
 }
