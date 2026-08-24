@@ -1,13 +1,13 @@
-import type { User } from 'firebase/auth'
 import type { ActivityEvent, Post } from '../domain/models'
+import type { AuthenticatedIdentity } from '../domain/identity'
 
 export interface IdentityPort {
-  currentUser(): User | null
+  currentIdentity(): AuthenticatedIdentity | null
 }
 
 export interface SocialRepositoryPort {
-  createPost(actor: User, content: string): Promise<Post>
-  subscribeHomeFeed(actor: User, onChange: (posts: Post[]) => void, onError: (error: Error) => void): () => void
-  likePost(actor: User, postId: string): Promise<void>
-  subscribeActivity(actor: User, onChange: (events: ActivityEvent[]) => void, onError: (error: Error) => void): () => void
+  createPost(actor: AuthenticatedIdentity, content: string): Promise<Post>
+  subscribeHomeFeed(actor: AuthenticatedIdentity, onChange: (posts: Post[]) => void, onError: (error: Error) => void): () => void
+  likePost(actor: AuthenticatedIdentity, postId: string): Promise<void>
+  subscribeActivity(actor: AuthenticatedIdentity, onChange: (events: ActivityEvent[]) => void, onError: (error: Error) => void): () => void
 }
