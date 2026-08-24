@@ -1,5 +1,5 @@
 import { initializeApp, type FirebaseOptions } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { browserLocalPersistence, getAuth, setPersistence } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const config: FirebaseOptions = {
@@ -17,4 +17,5 @@ for (const [name, value] of Object.entries(config)) {
 
 const app = initializeApp(config)
 export const firebaseAuth = getAuth(app)
+export const firebaseAuthReady = setPersistence(firebaseAuth, browserLocalPersistence)
 export const firestore = getFirestore(app)
