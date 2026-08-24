@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { login, register } from '../infrastructure/firebase/auth'
 
 export function AuthGate(): JSX.Element {
@@ -8,7 +8,7 @@ export function AuthGate(): JSX.Element {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  async function submit(event: React.FormEvent) {
+  async function submit(event: FormEvent) {
     event.preventDefault()
     setBusy(true)
     setError('')
