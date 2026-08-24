@@ -1,7 +1,8 @@
-import { collection, doc, onSnapshot, orderBy, query, runTransaction, serverTimestamp, where, addDoc } from 'firebase/firestore'
+import { addDoc, collection, doc, onSnapshot, orderBy, query, runTransaction, serverTimestamp, where } from 'firebase/firestore'
 import type { ActivityEvent, Post } from '../../social/domain/models'
 import type { AuthenticatedIdentity } from '../../social/domain/identity'
 import type { SocialRepositoryPort } from '../../social/application/ports'
+import { validatePostContent } from '../../social/domain/validation'
 import { firestore } from './config'
 
 function postFromSnapshot(snapshot: { id: string; data: () => Record<string, unknown> }): Post {
@@ -19,10 +20,7 @@ function postFromSnapshot(snapshot: { id: string; data: () => Record<string, unk
 
 export class FirebaseSocialRepository implements SocialRepositoryPort {
   async createPost(actor: AuthenticatedIdentity, content: string): Promise<Post> {
-    const clean = content.trim()
-    if (!clean) throw new Error('VALIDATION_FAILED: post content is required')
-    if (clean.length > 5000) throw new Error('VALIDATION_FAILED: post content is too long')
-
+    const clean = validatePostContent(content)
     const reference = await addDoc(collection(firestore, 'posts'), {
       authorId: actor.userId,
       authorEmail: actor.email,
@@ -32,7 +30,7 @@ export class FirebaseSocialRepository implements SocialRepositoryPort {
       createdAt: serverTimestamp(),
     })
 
-    const created = await new Promise<Post>((resolve, reject) => {
+    return new Promise<Post>((resolve, reject) => {
       const unsubscribe = onSnapshot(doc(firestore, 'posts', reference.id), snapshot => {
         if (!snapshot.exists()) {
           unsubscribe()
@@ -48,18 +46,11 @@ export class FirebaseSocialRepository implements SocialRepositoryPort {
         reject(error)
       })
     })
-
-    return created
   }
 
-  subscribeHomeFeed(actor: AuthenticatedIdentity, onChange: (posts: Post[]) => void, onError: (error: Error) => void): () => void {
+  subscribeHomeFeed(_actor: AuthenticatedIdentity, onChange: (posts: Post[]) => void, onError: (error: Error) => void): () => void {
     const feed = query(collection(firestore, 'posts'), orderBy('createdAt', 'desc'))
-    return onSnapshot(feed, snapshot => {
-      const posts = snapshot.docs
-        .map(docSnapshot => postFromSnapshot(docSnapshot))
-        .filter(post => post.authorId === actor.userId || post.authorId.length > 0)
-      onChange(posts)
-    }, error => onError(error))
+    return onSnapshot(feed, snapshot => onChange(snapshot.docs.map(postFromSnapshot)), error => onError(error))
   }
 
   async likePost(actor: AuthenticatedIdentity, postId: string): Promise<void> {
@@ -74,40 +65,21 @@ export class FirebaseSocialRepository implements SocialRepositoryPort {
       const like = await transaction.get(likeRef)
       if (like.exists()) return
 
-      const currentCount = Number(post.data().likeCount ?? 0)
-      transaction.set(likeRef, {
-        actorId: actor.userId,
-        postId,
-        createdAt: serverTimestamp(),
-      })
-      transaction.update(postRef, { likeCount: currentCount + 1 })
-      transaction.set(activityRef, {
-        type: 'like',
-        actorId: actor.userId,
-        targetPostId: postId,
-        createdAt: serverTimestamp(),
-      })
+      transaction.set(likeRef, { actorId: actor.userId, postId, createdAt: serverTimestamp() })
+      transaction.update(postRef, { likeCount: Number(post.data().likeCount ?? 0) + 1 })
+      transaction.set(activityRef, { type: 'like', actorId: actor.userId, targetPostId: postId, createdAt: serverTimestamp() })
     })
   }
 
   subscribeActivity(actor: AuthenticatedIdentity, onChange: (events: ActivityEvent[]) => void, onError: (error: Error) => void): () => void {
-    const activityQuery = query(
-      collection(firestore, 'activities'),
-      where('actorId', '==', actor.userId),
-      orderBy('createdAt', 'desc'),
-    )
+    const activityQuery = query(collection(firestore, 'activities'), where('actorId', '==', actor.userId))
     return onSnapshot(activityQuery, snapshot => {
-      onChange(snapshot.docs.map(item => {
+      const events = snapshot.docs.map(item => {
         const data = item.data()
         const timestamp = data.createdAt as { toMillis?: () => number } | undefined
-        return {
-          id: item.id,
-          type: 'like',
-          actorId: String(data.actorId ?? ''),
-          targetPostId: String(data.targetPostId ?? ''),
-          createdAtMs: timestamp?.toMillis?.() ?? null,
-        }
-      }))
+        return { id: item.id, type: 'like' as const, actorId: String(data.actorId ?? ''), targetPostId: String(data.targetPostId ?? ''), createdAtMs: timestamp?.toMillis?.() ?? null }
+      }).sort((a, b) => (b.createdAtMs ?? 0) - (a.createdAtMs ?? 0))
+      onChange(events)
     }, error => onError(error))
   }
 }
