@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ReactElement } from 'react'
-import { login, register } from '../infrastructure/firebase/auth'
+import { login, loginWithGoogle, register } from '../infrastructure/firebase/auth'
 import { describeAuthError } from '../infrastructure/firebase/authError'
 
 export function AuthGate(): ReactElement {
@@ -29,5 +29,20 @@ export function AuthGate(): ReactElement {
     }
   }
 
-  return <main className="auth-shell"><section className="auth-card"><div className="brand-mark">WD</div><h1>Work_Disk Social</h1><p>Sign in with a real account to enter the Social Web.</p><form onSubmit={submit}><label>Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" /></label><label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} /></label>{error && <div className="error" role="alert">{error}</div>}<button disabled={busy}>{busy ? 'Working…' : mode === 'login' ? 'Sign in' : 'Create account'}</button></form><button className="link-button" onClick={() => { setError(''); setMode(mode === 'login' ? 'register' : 'login') }}>{mode === 'login' ? 'Create a new account' : 'I already have an account'}</button></section></main>
+  async function continueWithGoogle() {
+    if (busy) return
+
+    setBusy(true)
+    setError('')
+
+    try {
+      await loginWithGoogle()
+    } catch (cause) {
+      setError(describeAuthError(cause))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return <main className="auth-shell"><section className="auth-card"><div className="brand-mark">WD</div><h1>Work_Disk Social</h1><p>Sign in with a real account to enter the Social Web.</p><button type="button" className="google-button" onClick={continueWithGoogle} disabled={busy}>Continue with Google</button><div className="auth-divider" aria-hidden="true"><span>or</span></div><form onSubmit={submit}><label>Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" /></label><label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} /></label>{error && <div className="error" role="alert">{error}</div>}<button disabled={busy}>{busy ? 'Working…' : mode === 'login' ? 'Sign in' : 'Create account'}</button></form><button type="button" className="link-button" disabled={busy} onClick={() => { setError(''); setMode(mode === 'login' ? 'register' : 'login') }}>{mode === 'login' ? 'Create a new account' : 'I already have an account'}</button></section></main>
 }
