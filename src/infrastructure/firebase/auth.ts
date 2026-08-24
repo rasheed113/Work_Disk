@@ -1,12 +1,9 @@
 import {
-  createUserWithEmailAndPassword,
-  getRedirectResult,
   GoogleAuthProvider,
+  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
-  signInWithRedirect,
   signOut,
-  type UserCredential,
 } from 'firebase/auth'
 import { firebaseAuth, firebaseAuthReady } from './config'
 
@@ -22,17 +19,7 @@ export async function login(email: string, password: string): Promise<void> {
 
 export async function loginWithGoogle(): Promise<void> {
   await firebaseAuthReady
-  const provider = new GoogleAuthProvider()
-  if (window.matchMedia('(max-width: 767px)').matches) {
-    await signInWithRedirect(firebaseAuth, provider)
-    return
-  }
-  await signInWithPopup(firebaseAuth, provider)
-}
-
-export async function resolveGoogleRedirect(): Promise<UserCredential | null> {
-  await firebaseAuthReady
-  return getRedirectResult(firebaseAuth)
+  await signInWithPopup(firebaseAuth, new GoogleAuthProvider())
 }
 
 export async function logout(): Promise<void> {
