@@ -1,5 +1,5 @@
-import { useState, type FormEvent, type ReactElement } from 'react'
-import { login, loginWithGoogle, register } from '../infrastructure/firebase/auth'
+import { useEffect, useState, type FormEvent, type ReactElement } from 'react'
+import { login, loginWithGoogle, register, resolveGoogleRedirect } from '../infrastructure/firebase/auth'
 import { describeAuthError } from '../infrastructure/firebase/authError'
 
 export function AuthGate(): ReactElement {
@@ -8,6 +8,16 @@ export function AuthGate(): ReactElement {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    let active = true
+    resolveGoogleRedirect().catch(cause => {
+      if (active) setError(describeAuthError(cause))
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -39,7 +49,6 @@ export function AuthGate(): ReactElement {
       await loginWithGoogle()
     } catch (cause) {
       setError(describeAuthError(cause))
-    } finally {
       setBusy(false)
     }
   }
