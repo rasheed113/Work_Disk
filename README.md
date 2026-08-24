@@ -2,40 +2,41 @@
 
 Work_Disk is a modern social web platform with posts, video, messaging, profiles, notifications, and a future productivity workspace.
 
-## Current build boundary
+## Current product
 
-The first product boundary is the **Social Web**. Dashboard is intentionally outside the Social product architecture; it is exposed only as a top-right navigation entry until the Social product is complete.
+The first product boundary is the **Social Web**. Dashboard is intentionally outside the Social product architecture and is exposed only as a top-right navigation destination.
 
-## Social navigation
+### Social navigation
 
-### Top bar
-- Inbox 📥 — top-left
-- Social header actions — notifications and activity shortcuts
-- Dashboard — top-right
+Top:
+- Inbox 📥
+- Activity shortcuts
+- → Dashboard
 
-### Bottom navigation
+Bottom:
 - Home 🏠
 - Post ➕
 - Video 🎬
 - Profile 🧑‍💼
 
-## Activity shortcuts
+## Real vertical slice
 
-The social home may expose compact activity shortcuts for:
+`Authenticated Identity → Home Read → Create Post → Firestore Persistence → Home Read-back → Atomic Like → Activity Event`
 
-- Notifications
-- Likes
-- Comments
-- Reposts
-- Shares
-- Future activity types added through the Social contract
+The implementation contains no seed posts, fake counters, hardcoded user identity, or mock success path. Empty data is shown as an explicit empty state.
 
-## Architecture workflow
+## Architecture
 
-`Architecture → Attack → Boundary → Blueprint → Contract → Implementation → Tests → Verification`
+`Presentation → Application Contracts → Domain → Infrastructure Ports → Firebase`
 
-Implementation does not begin until the relevant contract is defined.
+Firebase SDKs terminate at the infrastructure boundary. Domain/application code remains provider-neutral.
+
+## Engineering workflow
+
+`Architecture → Attack → Boundary → Blueprint → Contract → Implementation → Tests → Security/Runtime Verification → Deployment Verification`
 
 ## Firebase
 
-Firebase is a candidate infrastructure platform for authentication, realtime messaging, data, media storage, notifications, and security rules. Firebase services remain behind Work_Disk domain boundaries so the product architecture is not coupled directly to provider-specific APIs.
+The first provider adapter is Firebase Authentication + Firestore + Firebase Hosting. Configuration is supplied through environment variables; privileged deployment credentials remain GitHub secrets.
+
+See `docs/social/FIREBASE_SETUP.md` for the real-data setup and acceptance procedure.
