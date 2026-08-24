@@ -6,20 +6,20 @@ import { resolveGoogleRedirect } from '../infrastructure/firebase/auth'
 
 export function App(): ReactElement {
   const [authenticated, setAuthenticated] = useState(firebaseAuth.currentUser !== null)
-  const [authReady, setAuthReady] = useState(false)
+  const [authReady, setAuthReady] = useState(firebaseAuth.currentUser !== null)
 
   useEffect(() => {
     let active = true
 
-    void resolveGoogleRedirect()
-      .catch(() => null)
-      .finally(() => {
-        if (active) setAuthReady(true)
-      })
-
     const unsubscribe = firebaseAuth.onAuthStateChanged(user => {
-      if (active) setAuthenticated(user !== null)
+      if (!active) return
+      setAuthenticated(user !== null)
+      setAuthReady(true)
     })
+
+    // Resolve a pending Google redirect without making the entire app wait on it.
+    // onAuthStateChanged remains the authoritative session boundary.
+    void resolveGoogleRedirect().catch(() => null)
 
     return () => {
       active = false
