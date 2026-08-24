@@ -1,6 +1,5 @@
 import {
   GoogleAuthProvider,
-  browserPopupRedirectResolver,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -18,13 +17,12 @@ export async function login(email: string, password: string): Promise<void> {
   await signInWithEmailAndPassword(firebaseAuth, email.trim(), password)
 }
 
-export async function loginWithGoogle(): Promise<void> {
-  await firebaseAuthReady
-
+export function loginWithGoogle(): Promise<void> {
+  // Popup creation must happen directly from the click's user activation.
+  // Awaiting firebaseAuthReady here can lose that activation on mobile Chrome.
   const provider = new GoogleAuthProvider()
   provider.setCustomParameters({ prompt: 'select_account' })
-
-  await signInWithPopup(firebaseAuth, provider, browserPopupRedirectResolver)
+  return signInWithPopup(firebaseAuth, provider)
 }
 
 export async function logout(): Promise<void> {
