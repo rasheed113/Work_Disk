@@ -1,5 +1,6 @@
 import {
   GoogleAuthProvider,
+  browserPopupRedirectResolver,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -19,7 +20,11 @@ export async function login(email: string, password: string): Promise<void> {
 
 export async function loginWithGoogle(): Promise<void> {
   await firebaseAuthReady
-  await signInWithPopup(firebaseAuth, new GoogleAuthProvider())
+
+  const provider = new GoogleAuthProvider()
+  provider.setCustomParameters({ prompt: 'select_account' })
+
+  await signInWithPopup(firebaseAuth, provider, browserPopupRedirectResolver)
 }
 
 export async function logout(): Promise<void> {
