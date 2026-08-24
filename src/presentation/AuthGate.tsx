@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactElement } from 'react'
 import { login, register } from '../infrastructure/firebase/auth'
 
-export function AuthGate(): JSX.Element {
+export function AuthGate(): ReactElement {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -9,35 +9,11 @@ export function AuthGate(): JSX.Element {
   const [error, setError] = useState('')
 
   async function submit(event: FormEvent) {
-    event.preventDefault()
-    setBusy(true)
-    setError('')
-    try {
-      if (mode === 'login') await login(email, password)
-      else await register(email, password)
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Authentication failed')
-    } finally {
-      setBusy(false)
-    }
+    event.preventDefault(); setBusy(true); setError('')
+    try { if (mode === 'login') await login(email, password); else await register(email, password) }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Authentication failed') }
+    finally { setBusy(false) }
   }
 
-  return (
-    <main className="auth-shell">
-      <section className="auth-card">
-        <div className="brand-mark">WD</div>
-        <h1>Work_Disk Social</h1>
-        <p>Sign in with a real account to enter the Social Web.</p>
-        <form onSubmit={submit}>
-          <label>Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" /></label>
-          <label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} /></label>
-          {error && <div className="error">{error}</div>}
-          <button disabled={busy}>{busy ? 'Working…' : mode === 'login' ? 'Sign in' : 'Create account'}</button>
-        </form>
-        <button className="link-button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>
-          {mode === 'login' ? 'Create a new account' : 'I already have an account'}
-        </button>
-      </section>
-    </main>
-  )
+  return <main className="auth-shell"><section className="auth-card"><div className="brand-mark">WD</div><h1>Work_Disk Social</h1><p>Sign in with a real account to enter the Social Web.</p><form onSubmit={submit}><label>Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" /></label><label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} /></label>{error && <div className="error">{error}</div>}<button disabled={busy}>{busy ? 'Working…' : mode === 'login' ? 'Sign in' : 'Create account'}</button></form><button className="link-button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>{mode === 'login' ? 'Create a new account' : 'I already have an account'}</button></section></main>
 }
