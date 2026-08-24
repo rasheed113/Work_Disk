@@ -12,16 +12,11 @@ export function AuthGate(): ReactElement {
   async function submit(event: FormEvent) {
     event.preventDefault()
     if (busy) return
-
     setBusy(true)
     setError('')
-
     try {
-      if (mode === 'login') {
-        await login(email, password)
-      } else {
-        await register(email, password)
-      }
+      if (mode === 'login') await login(email, password)
+      else await register(email, password)
     } catch (cause) {
       setError(describeAuthError(cause))
     } finally {
@@ -31,14 +26,13 @@ export function AuthGate(): ReactElement {
 
   async function continueWithGoogle() {
     if (busy) return
-
     setBusy(true)
     setError('')
-
     try {
       await loginWithGoogle()
     } catch (cause) {
       setError(describeAuthError(cause))
+    } finally {
       setBusy(false)
     }
   }
