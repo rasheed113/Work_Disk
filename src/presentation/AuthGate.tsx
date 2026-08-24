@@ -2,23 +2,6 @@ import { useState, type FormEvent, type ReactElement } from 'react'
 import { login, register } from '../infrastructure/firebase/auth'
 import { describeAuthError } from '../infrastructure/firebase/authError'
 
-const AUTH_TIMEOUT_MS = 15_000
-
-async function withAuthTimeout<T>(operation: Promise<T>): Promise<T> {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined
-  const timeout = new Promise<T>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(new Error('Firebase authentication timed out after 15 seconds. Please check the live site connection to Firebase and try again.'))
-    }, AUTH_TIMEOUT_MS)
-  })
-
-  try {
-    return await Promise.race([operation, timeout])
-  } finally {
-    if (timeoutId !== undefined) clearTimeout(timeoutId)
-  }
-}
-
 export function AuthGate(): ReactElement {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -35,9 +18,9 @@ export function AuthGate(): ReactElement {
 
     try {
       if (mode === 'login') {
-        await withAuthTimeout(login(email, password))
+        await login(email, password)
       } else {
-        await withAuthTimeout(register(email, password))
+        await register(email, password)
       }
     } catch (cause) {
       setError(describeAuthError(cause))
