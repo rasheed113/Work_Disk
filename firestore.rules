@@ -27,5 +27,15 @@ service cloud.firestore {
       allow create: if signedIn() && request.resource.data.actorId == request.auth.uid && request.resource.data.type == 'like' && request.resource.data.targetPostId is string && getAfter(/databases/$(database)/documents/posts/$(request.resource.data.targetPostId)/likes/$(request.auth.uid)).data.actorId == request.auth.uid;
       allow update, delete: if false;
     }
+
+    match /profiles/{userId} {
+      allow read: if own(userId);
+      allow create: if own(userId) && request.resource.data.userId == request.auth.uid && request.resource.data.email == request.auth.token.email;
+      allow update: if own(userId)
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.wdId == resource.data.wdId
+        && request.resource.data.email == request.auth.token.email;
+      allow delete: if false;
+    }
   }
 }
