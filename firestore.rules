@@ -2,24 +2,37 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
-    function own(value) { return signedIn() && value == request.auth.uid; }
-    function participant(data) { return signedIn() && request.auth.uid in data.participantIds; }
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function own(value) {
+      return signedIn() && value == request.auth.uid;
+    }
+
+    function participant(data) {
+      return signedIn() && request.auth.uid in data.participantIds;
+    }
 
     match /profiles/{userId} {
       allow read: if own(userId);
-      allow create: if own(userId) && request.resource.data.userId == request.auth.uid && request.resource.data.email == request.auth.token.email;
-      allow update: if own(userId) && request.resource.data.userId == resource.data.userId && request.resource.data.wdId == resource.data.wdId && request.resource.data.email == request.auth.token.email;
+      allow create: if own(userId)
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.email == request.auth.token.email;
+      allow update: if own(userId)
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.wdId == resource.data.wdId
+        && request.resource.data.email == request.auth.token.email;
       allow delete: if false;
     }
 
     match /posts/{postId} {
       allow read: if signedIn();
+
       allow create: if signedIn()
         && request.resource.data.authorId == request.auth.uid
         && request.resource.data.likeCount == 0
         && request.resource.data.commentCount == 0
-        && request.resource.data.repostCount == 0
         && request.resource.data.privacy in ['public', 'friends_followers', 'selected_friends', 'only_me'];
 
       allow update: if signedIn()
@@ -32,79 +45,110 @@ service cloud.firestore {
             && request.resource.data.selectedUserIds == resource.data.selectedUserIds
           )
         );
-      allow delete: if signedIn() && resource.data.authorId == request.auth.uid;
+
+      allow delete: if signedIn()
+        && resource.data.authorId == request.auth.uid;
 
       match /reactions/{userId} {
         allow read: if signedIn();
-        allow create, update: if own(userId) && request.resource.data.actorId == request.auth.uid && request.resource.data.postId == postId && request.resource.data.type in ['like','love','haha','wow','sad','angry'];
+        allow create, update: if own(userId)
+          && request.resource.data.actorId == request.auth.uid
+          && request.resource.data.postId == postId
+          && request.resource.data.type in ['like','love','haha','wow','sad','angry'];
         allow delete: if own(userId);
       }
 
       match /likes/{userId} {
         allow read: if signedIn();
-        allow create: if own(userId) && request.resource.data.actorId == request.auth.uid && request.resource.data.postId == postId;
+        allow create: if own(userId)
+          && request.resource.data.actorId == request.auth.uid
+          && request.resource.data.postId == postId;
         allow delete: if own(userId);
         allow update: if false;
       }
 
       match /comments/{commentId} {
         allow read: if signedIn();
-        allow create: if signedIn() && request.resource.data.authorId == request.auth.uid && request.resource.data.postId == postId && request.resource.data.parentCommentId == null || signedIn() && request.resource.data.authorId == request.auth.uid && request.resource.data.postId == postId;
-        allow update: if signedIn() && resource.data.authorId == request.auth.uid && request.resource.data.authorId == resource.data.authorId;
-        allow delete: if signedIn() && (resource.data.authorId == request.auth.uid || get(/databases/$(database)/documents/posts/$(postId)).data.authorId == request.auth.uid);
+        allow create: if signedIn()
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.postId == postId;
+        allow update: if signedIn()
+          && resource.data.authorId == request.auth.uid
+          && request.resource.data.authorId == resource.data.authorId;
+        allow delete: if signedIn()
+          && (
+            resource.data.authorId == request.auth.uid
+            || get(/databases/$(database)/documents/posts/$(postId)).data.authorId == request.auth.uid
+          );
 
         match /reactions/{userId} {
           allow read: if signedIn();
-          allow create, update: if own(userId) && request.resource.data.actorId == request.auth.uid && request.resource.data.type in ['like','love','haha','wow','sad','angry'];
+          allow create, update: if own(userId)
+            && request.resource.data.actorId == request.auth.uid
+            && request.resource.data.type in ['like','love','haha','wow','sad','angry'];
           allow delete: if own(userId);
         }
-      }
-
-      match /reposts/{userId} {
-        allow read: if signedIn();
-        allow create: if own(userId) && request.resource.data.actorId == request.auth.uid && request.resource.data.postId == postId;
-        allow delete: if own(userId);
-        allow update: if false;
       }
     }
 
     match /postShares/{shareId} {
-      allow create: if signedIn() && request.resource.data.actorId == request.auth.uid && request.resource.data.postId is string;
-      allow read: if signedIn() && resource.data.actorId == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.actorId == request.auth.uid
+        && request.resource.data.postId is string;
+      allow read: if signedIn()
+        && resource.data.actorId == request.auth.uid;
       allow update, delete: if false;
     }
 
     match /activities/{activityId} {
-      allow read: if signedIn() && resource.data.actorId == request.auth.uid;
-      allow create: if signedIn() && request.resource.data.actorId == request.auth.uid && request.resource.data.targetPostId is string;
+      allow read: if signedIn()
+        && resource.data.actorId == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.actorId == request.auth.uid
+        && request.resource.data.targetPostId is string;
       allow update, delete: if false;
     }
 
     match /videos/{videoId} {
       allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.authorId == request.auth.uid;
-      allow update, delete: if signedIn() && resource.data.authorId == request.auth.uid && request.resource.data.authorId == resource.data.authorId;
+      allow create: if signedIn()
+        && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if signedIn()
+        && resource.data.authorId == request.auth.uid
+        && request.resource.data.authorId == resource.data.authorId;
     }
 
     match /media/{mediaId} {
-      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
-      allow read: if signedIn() && resource.data.ownerId == request.auth.uid;
-      allow update, delete: if signedIn() && resource.data.ownerId == request.auth.uid && request.resource.data.ownerId == resource.data.ownerId;
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid;
+      allow read: if signedIn()
+        && resource.data.ownerId == request.auth.uid;
+      allow update, delete: if signedIn()
+        && resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == resource.data.ownerId;
     }
 
     match /conversations/{conversationId} {
       allow create: if participant(request.resource.data);
       allow read, update: if participant(resource.data);
       allow delete: if false;
+
       match /messages/{messageId} {
-        allow read: if participant(get(/databases/$(database)/documents/conversations/$(conversationId)).data);
-        allow create: if participant(get(/databases/$(database)/documents/conversations/$(conversationId)).data) && request.resource.data.senderId == request.auth.uid;
-        allow update, delete: if participant(get(/databases/$(database)/documents/conversations/$(conversationId)).data) && resource.data.senderId == request.auth.uid;
+        allow read: if participant(
+          get(/databases/$(database)/documents/conversations/$(conversationId)).data
+        );
+        allow create: if participant(
+          get(/databases/$(database)/documents/conversations/$(conversationId)).data
+        ) && request.resource.data.senderId == request.auth.uid;
+        allow update, delete: if participant(
+          get(/databases/$(database)/documents/conversations/$(conversationId)).data
+        ) && resource.data.senderId == request.auth.uid;
       }
     }
 
     match /notifications/{notificationId} {
-      allow read, update, delete: if signedIn() && resource.data.recipientId == request.auth.uid;
+      allow read, update, delete: if signedIn()
+        && resource.data.recipientId == request.auth.uid;
       allow create: if false;
     }
 
@@ -116,10 +160,20 @@ service cloud.firestore {
 
     match /relationships/{relationshipId} {
       allow read: if signedIn();
-      allow create: if signedIn() && (request.resource.data.followerId == request.auth.uid || request.resource.data.followingId == request.auth.uid);
-      allow update, delete: if signedIn() && (resource.data.followerId == request.auth.uid || resource.data.followingId == request.auth.uid);
+      allow create: if signedIn()
+        && (
+          request.resource.data.followerId == request.auth.uid
+          || request.resource.data.followingId == request.auth.uid
+        );
+      allow update, delete: if signedIn()
+        && (
+          resource.data.followerId == request.auth.uid
+          || resource.data.followingId == request.auth.uid
+        );
     }
 
-    match /{document=**} { allow read, write: if false; }
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }
