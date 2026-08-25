@@ -15,8 +15,6 @@ export interface SocialRepositoryPort {
   updateComment(actor: AuthenticatedIdentity, postId: string, commentId: string, content: string, mentions?: string[]): Promise<void>
   deleteComment(actor: AuthenticatedIdentity, postId: string, commentId: string): Promise<void>
   setCommentReaction(actor: AuthenticatedIdentity, postId: string, commentId: string, reaction: PostReaction | null): Promise<void>
-  repost(actor: AuthenticatedIdentity, postId: string): Promise<void>
   share(actor: AuthenticatedIdentity, postId: string): Promise<void>
-  likePost(actor: AuthenticatedIdentity, postId: string): Promise<void>
   subscribeActivity(actor: AuthenticatedIdentity, onChange: (events: ActivityEvent[]) => void, onError: (error: Error) => void): () => void
 }
