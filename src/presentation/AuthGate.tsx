@@ -1,12 +1,10 @@
 import { useState, type FormEvent, type ReactElement } from 'react'
 import { login, loginWithGoogle, register, resetPassword } from '../infrastructure/firebase/auth'
 import { describeAuthError } from '../infrastructure/firebase/authError'
-import { authenticatedIdentity } from '../infrastructure/firebase/identityAdapter'
-import type { AuthenticatedIdentity } from '../social/domain/identity'
 
-type AuthGateProps = { onAuthenticated?: (identity: AuthenticatedIdentity) => void }
+type AuthGateProps = Record<string, never>
 
-export function AuthGate({ onAuthenticated }: AuthGateProps): ReactElement {
+export function AuthGate(_props: AuthGateProps): ReactElement {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -47,12 +45,8 @@ export function AuthGate({ onAuthenticated }: AuthGateProps): ReactElement {
   async function continueWithGoogle() {
     if (busy) return
     setBusy(true); setError('')
-    try {
-      const credential = await loginWithGoogle()
-      const identity = authenticatedIdentity(credential.user)
-      if (!identity) throw new Error('Google authentication succeeded but no usable email was returned.')
-      onAuthenticated?.(identity)
-    } catch (cause) { setError(describeAuthError(cause)) }
+    try { await loginWithGoogle() }
+    catch (cause) { setError(describeAuthError(cause)) }
     finally { setBusy(false) }
   }
 
