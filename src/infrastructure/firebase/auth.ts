@@ -32,7 +32,11 @@ export async function login(email: string, password: string): Promise<void> {
 export async function resetPassword(email: string): Promise<void> {
   const normalisedEmail = normaliseEmail(email)
   if (!normalisedEmail) throw new Error('Please enter your email address.')
-  await sendPasswordResetEmail(firebaseAuth, normalisedEmail)
+  const actionCodeSettings = {
+    url: `${window.location.origin}/?mode=resetPassword`,
+    handleCodeInApp: false,
+  }
+  await sendPasswordResetEmail(firebaseAuth, normalisedEmail, actionCodeSettings)
 }
 
 // Keep the proven Google popup flow unchanged.
