@@ -1,10 +1,8 @@
 import type { AuthenticatedIdentity } from '../../social/domain/identity'
 import type { SocialProfile } from '../../social/domain/profile'
 import { firebaseAuth } from './config'
-import { LegacyFirebaseProfileRepository } from './legacyProfileRepository'
 
 const apiBase = (import.meta.env.VITE_WORK_DISK_API_URL as string | undefined)?.replace(/\/$/, '') || 'http://localhost:8787'
-const legacy = new LegacyFirebaseProfileRepository()
 
 async function idToken(): Promise<string> {
   const user = firebaseAuth.currentUser
@@ -24,18 +22,10 @@ async function apiRequest(method: 'GET' | 'PATCH', body?: Record<string, unknown
   return data.payload
 }
 
-function needsMigration(profile: SocialProfile): boolean {
-  return !profile.profileName && !profile.fullName && !profile.photoUrl && !profile.coverUrl && !profile.mobile && !profile.companyName && profile.age === null && !profile.gender
-}
-
 export class FirebaseProfileRepository {
   async getProfile(identity: AuthenticatedIdentity): Promise<SocialProfile> {
     const current = await apiRequest('GET')
-    if (!needsMigration(current)) return current
-
-    const old = await legacy.getProfile(identity)
-    const migrated = await this.saveProfile(identity, old)
-    return migrated
+    return { ...current, userId: identity.userId, email: identity.email }
   }
 
   async saveProfile(identity: AuthenticatedIdentity, profile: SocialProfile): Promise<SocialProfile> {
