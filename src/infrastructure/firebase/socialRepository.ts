@@ -1,5 +1,5 @@
-import { addDoc, collection, doc, onSnapshot, orderBy, query, runTransaction, serverTimestamp, where } from 'firebase/firestore'
-import type { ActivityEvent, Post } from '../../social/domain/models'
+import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, runTransaction, serverTimestamp, where } from 'firebase/firestore'
+import type { ActivityEvent, Comment, Post, PostPrivacy, PostReaction } from '../../social/domain/models'
 import type { AuthenticatedIdentity } from '../../social/domain/identity'
 import type { SocialRepositoryPort } from '../../social/application/ports'
 import { validatePostContent } from '../../social/domain/validation'
@@ -7,93 +7,26 @@ import { firestore } from './config'
 import { FirebaseProfileRepository } from './profileRepository'
 
 const profiles = new FirebaseProfileRepository()
+const reactions: PostReaction[] = ['like', 'love', 'haha', 'wow', 'sad', 'angry']
 type Snapshot = { id: string; data: () => Record<string, unknown> }
-
-function postFromSnapshot(snapshot: Snapshot): Post {
-  const data = snapshot.data()
-  const timestamp = data.createdAt as { toMillis?: () => number } | undefined
-  return {
-    id: snapshot.id,
-    authorId: String(data.authorId ?? ''),
-    author: {
-      wdId: String(data.authorWdId ?? ''),
-      profileName: String(data.authorProfileName ?? ''),
-      photoUrl: String(data.authorPhotoUrl ?? ''),
-    },
-    content: String(data.content ?? ''),
-    createdAtMs: timestamp?.toMillis?.() ?? null,
-    likeCount: Number(data.likeCount ?? 0),
-  }
-}
+function counts(value: unknown): Record<PostReaction, number> { const map = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>; return Object.fromEntries(reactions.map(type => [type, Number(map[type] ?? 0)])) as Record<PostReaction, number> }
+function postFromSnapshot(snapshot: Snapshot): Post { const data = snapshot.data(); const timestamp = data.createdAt as { toMillis?: () => number } | undefined; return { id: snapshot.id, authorId: String(data.authorId ?? ''), author: { wdId: String(data.authorWdId ?? ''), profileName: String(data.authorProfileName ?? ''), photoUrl: String(data.authorPhotoUrl ?? '') }, content: String(data.content ?? ''), createdAtMs: timestamp?.toMillis?.() ?? null, likeCount: Number(data.likeCount ?? 0), privacy: (data.privacy ?? 'public') as PostPrivacy, reactionCounts: counts(data.reactionCounts), userReaction: null, commentCount: Number(data.commentCount ?? 0), repostCount: Number(data.repostCount ?? 0) } }
+function commentFromSnapshot(snapshot: Snapshot): Comment { const data = snapshot.data(); const created = data.createdAt as { toMillis?: () => number } | undefined; const edited = data.editedAt as { toMillis?: () => number } | undefined; return { id: snapshot.id, postId: String(data.postId ?? ''), authorId: String(data.authorId ?? ''), author: { wdId: String(data.authorWdId ?? ''), profileName: String(data.authorProfileName ?? ''), photoUrl: String(data.authorPhotoUrl ?? '') }, content: String(data.content ?? ''), parentCommentId: data.parentCommentId ? String(data.parentCommentId) : null, createdAtMs: created?.toMillis?.() ?? null, editedAtMs: edited?.toMillis?.() ?? null, likeCount: Number(data.likeCount ?? 0), reactionCounts: counts(data.reactionCounts), userReaction: null, mentions: Array.isArray(data.mentions) ? data.mentions.map(String) : [] } }
 
 export class FirebaseSocialRepository implements SocialRepositoryPort {
-  async createPost(actor: AuthenticatedIdentity, content: string): Promise<Post> {
-    const clean = validatePostContent(content)
-    const profile = await profiles.getProfile(actor)
-    const profileName = profile.profileName.trim()
-    const profilePhoto = profile.photoUrl.trim()
-    if (!profileName) throw new Error('PROFILE_REQUIRED: profile name is required before creating a post')
-    if (!profilePhoto) throw new Error('PROFILE_REQUIRED: profile picture is required before creating a post')
-
-    const reference = await addDoc(collection(firestore, 'posts'), {
-      authorId: actor.userId,
-      authorWdId: profile.wdId,
-      authorProfileName: profileName,
-      authorPhotoUrl: profilePhoto,
-      content: clean,
-      audience: 'authenticated',
-      likeCount: 0,
-      createdAt: serverTimestamp(),
-    })
-
-    return new Promise<Post>((resolve, reject) => {
-      const unsubscribe = onSnapshot(doc(firestore, 'posts', reference.id), snapshot => {
-        if (!snapshot.exists()) {
-          unsubscribe()
-          reject(new Error('PROVIDER_FAILURE: created post disappeared'))
-          return
-        }
-        const post = postFromSnapshot(snapshot)
-        if (post.createdAtMs === null) return
-        unsubscribe()
-        resolve(post)
-      }, error => {
-        unsubscribe()
-        reject(error)
-      })
-    })
-  }
-
-  subscribeHomeFeed(_actor: AuthenticatedIdentity, onChange: (posts: Post[]) => void, onError: (error: Error) => void): () => void {
-    const feed = query(collection(firestore, 'posts'), orderBy('createdAt', 'desc'))
-    return onSnapshot(feed, snapshot => onChange(snapshot.docs.map(postFromSnapshot)), error => onError(error))
-  }
-
-  async likePost(actor: AuthenticatedIdentity, postId: string): Promise<void> {
-    if (!postId) throw new Error('VALIDATION_FAILED: postId is required')
-    const postRef = doc(firestore, 'posts', postId)
-    const likeRef = doc(firestore, 'posts', postId, 'likes', actor.userId)
-    const activityRef = doc(firestore, 'activities', `${actor.userId}_${postId}_like`)
-    await runTransaction(firestore, async transaction => {
-      const post = await transaction.get(postRef)
-      if (!post.exists()) throw new Error('NOT_FOUND: post does not exist')
-      const like = await transaction.get(likeRef)
-      if (like.exists()) return
-      transaction.set(likeRef, { actorId: actor.userId, postId, createdAt: serverTimestamp() })
-      transaction.update(postRef, { likeCount: Number(post.data().likeCount ?? 0) + 1 })
-      transaction.set(activityRef, { type: 'like', actorId: actor.userId, targetPostId: postId, createdAt: serverTimestamp() })
-    })
-  }
-
-  subscribeActivity(actor: AuthenticatedIdentity, onChange: (events: ActivityEvent[]) => void, onError: (error: Error) => void): () => void {
-    const activityQuery = query(collection(firestore, 'activities'), where('actorId', '==', actor.userId))
-    return onSnapshot(activityQuery, snapshot => {
-      const events = snapshot.docs.map(item => {
-        const data = item.data()
-        const timestamp = data.createdAt as { toMillis?: () => number } | undefined
-        return { id: item.id, type: 'like' as const, actorId: String(data.actorId ?? ''), targetPostId: String(data.targetPostId ?? ''), createdAtMs: timestamp?.toMillis?.() ?? null }
-      }).sort((a, b) => (b.createdAtMs ?? 0) - (a.createdAtMs ?? 0))
-      onChange(events)
-    }, error => onError(error))
-  }
+  async createPost(actor: AuthenticatedIdentity, content: string, privacy: PostPrivacy = 'public', taggedUserIds: string[] = [], mentions: string[] = []): Promise<Post> { const clean = validatePostContent(content); const profile = await profiles.getProfile(actor); const profileName = profile.profileName.trim(); const profilePhoto = profile.photoUrl.trim(); if (!profileName || !profilePhoto) throw new Error('PROFILE_REQUIRED: complete your profile name and picture before creating a post'); const reference = await addDoc(collection(firestore, 'posts'), { authorId: actor.userId, authorWdId: profile.wdId, authorProfileName: profileName, authorPhotoUrl: profilePhoto, content: clean, privacy, selectedUserIds: privacy === 'selected_friends' ? taggedUserIds : [], taggedUserIds, mentions, likeCount: 0, commentCount: 0, repostCount: 0, reactionCounts: Object.fromEntries(reactions.map(type => [type, 0])), createdAt: serverTimestamp() }); const snapshot = await getDoc(reference); if (!snapshot.exists()) throw new Error('PROVIDER_FAILURE: created post disappeared'); return postFromSnapshot(snapshot) }
+  subscribeHomeFeed(_actor: AuthenticatedIdentity, onChange: (posts: Post[]) => void, onError: (error: Error) => void): () => void { const feed = query(collection(firestore, 'posts'), orderBy('createdAt', 'desc')); return onSnapshot(feed, snapshot => onChange(snapshot.docs.map(postFromSnapshot)), error => onError(error)) }
+  async updatePost(actor: AuthenticatedIdentity, postId: string, content: string): Promise<void> { const clean = validatePostContent(content); const ref = doc(firestore, 'posts', postId); await runTransaction(firestore, async transaction => { const post = await transaction.get(ref); if (!post.exists() || post.data().authorId !== actor.userId) throw new Error('FORBIDDEN: only the post owner can edit it'); transaction.update(ref, { content: clean, editedAt: serverTimestamp() }) }) }
+  async deletePost(actor: AuthenticatedIdentity, postId: string): Promise<void> { const ref = doc(firestore, 'posts', postId); await runTransaction(firestore, async transaction => { const post = await transaction.get(ref); if (!post.exists() || post.data().authorId !== actor.userId) throw new Error('FORBIDDEN: only the post owner can delete it'); transaction.delete(ref) }) }
+  async updatePostPrivacy(actor: AuthenticatedIdentity, postId: string, privacy: PostPrivacy, selectedUserIds: string[] = []): Promise<void> { const ref = doc(firestore, 'posts', postId); await runTransaction(firestore, async transaction => { const post = await transaction.get(ref); if (!post.exists() || post.data().authorId !== actor.userId) throw new Error('FORBIDDEN: only the post owner can change privacy'); transaction.update(ref, { privacy, selectedUserIds: privacy === 'selected_friends' ? selectedUserIds : [] }) }) }
+  async setPostReaction(actor: AuthenticatedIdentity, postId: string, reaction: PostReaction | null): Promise<void> { const postRef = doc(firestore, 'posts', postId); const reactionRef = doc(firestore, 'posts', postId, 'reactions', actor.userId); await runTransaction(firestore, async transaction => { const post = await transaction.get(postRef); const existing = await transaction.get(reactionRef); if (!post.exists()) throw new Error('NOT_FOUND: post does not exist'); const previous = existing.exists() ? String(existing.data().type) as PostReaction : null; if (previous === reaction) return; const current = counts(post.data().reactionCounts); if (previous) current[previous] = Math.max(0, current[previous] - 1); if (reaction) current[reaction] += 1; transaction.update(postRef, { reactionCounts: current, likeCount: current.like }); if (reaction) transaction.set(reactionRef, { actorId: actor.userId, postId, type: reaction, createdAt: serverTimestamp() }); else if (existing.exists()) transaction.delete(reactionRef) }) }
+  async likePost(actor: AuthenticatedIdentity, postId: string): Promise<void> { await this.setPostReaction(actor, postId, 'like') }
+  subscribeComments(_actor: AuthenticatedIdentity, postId: string, onChange: (comments: Comment[]) => void, onError: (error: Error) => void): () => void { const commentsQuery = query(collection(firestore, 'posts', postId, 'comments'), orderBy('createdAt', 'asc')); return onSnapshot(commentsQuery, snapshot => onChange(snapshot.docs.map(commentFromSnapshot)), error => onError(error)) }
+  async createComment(actor: AuthenticatedIdentity, postId: string, content: string, parentCommentId: string | null = null, mentions: string[] = []): Promise<Comment> { const clean = content.trim(); if (!clean) throw new Error('VALIDATION_FAILED: comment cannot be empty'); const profile = await profiles.getProfile(actor); const postRef = doc(firestore, 'posts', postId); const commentRef = doc(collection(firestore, 'posts', postId, 'comments')); await runTransaction(firestore, async transaction => { const post = await transaction.get(postRef); if (!post.exists()) throw new Error('NOT_FOUND: post does not exist'); transaction.set(commentRef, { postId, authorId: actor.userId, authorWdId: profile.wdId, authorProfileName: profile.profileName, authorPhotoUrl: profile.photoUrl, content: clean, parentCommentId, mentions, likeCount: 0, reactionCounts: Object.fromEntries(reactions.map(type => [type, 0])), createdAt: serverTimestamp(), editedAt: null }); transaction.update(postRef, { commentCount: Number(post.data().commentCount ?? 0) + 1 }) }); const snapshot = await getDoc(commentRef); if (!snapshot.exists()) throw new Error('PROVIDER_FAILURE: comment was not created'); return commentFromSnapshot(snapshot) }
+  async updateComment(actor: AuthenticatedIdentity, postId: string, commentId: string, content: string, mentions: string[] = []): Promise<void> { const clean = content.trim(); if (!clean) throw new Error('VALIDATION_FAILED: comment cannot be empty'); const ref = doc(firestore, 'posts', postId, 'comments', commentId); await runTransaction(firestore, async transaction => { const comment = await transaction.get(ref); if (!comment.exists() || comment.data().authorId !== actor.userId) throw new Error('FORBIDDEN: only the comment owner can edit it'); transaction.update(ref, { content: clean, mentions, editedAt: serverTimestamp() }) }) }
+  async deleteComment(actor: AuthenticatedIdentity, postId: string, commentId: string): Promise<void> { const postRef = doc(firestore, 'posts', postId); const commentRef = doc(firestore, 'posts', postId, 'comments', commentId); await runTransaction(firestore, async transaction => { const post = await transaction.get(postRef); const comment = await transaction.get(commentRef); if (!post.exists() || !comment.exists()) throw new Error('NOT_FOUND: comment does not exist'); if (comment.data().authorId !== actor.userId && post.data().authorId !== actor.userId) throw new Error('FORBIDDEN: only the comment owner or post owner can delete it'); transaction.delete(commentRef); transaction.update(postRef, { commentCount: Math.max(0, Number(post.data().commentCount ?? 0) - 1) }) }) }
+  async setCommentReaction(actor: AuthenticatedIdentity, postId: string, commentId: string, reaction: PostReaction | null): Promise<void> { const commentRef = doc(firestore, 'posts', postId, 'comments', commentId); const reactionRef = doc(firestore, 'posts', postId, 'comments', commentId, 'reactions', actor.userId); await runTransaction(firestore, async transaction => { const comment = await transaction.get(commentRef); const existing = await transaction.get(reactionRef); if (!comment.exists()) throw new Error('NOT_FOUND: comment does not exist'); const previous = existing.exists() ? String(existing.data().type) as PostReaction : null; if (previous === reaction) return; const current = counts(comment.data().reactionCounts); if (previous) current[previous] = Math.max(0, current[previous] - 1); if (reaction) current[reaction] += 1; transaction.update(commentRef, { reactionCounts: current, likeCount: current.like }); if (reaction) transaction.set(reactionRef, { actorId: actor.userId, type: reaction, createdAt: serverTimestamp() }); else if (existing.exists()) transaction.delete(reactionRef) }) }
+  async repost(actor: AuthenticatedIdentity, postId: string): Promise<void> { const postRef = doc(firestore, 'posts', postId); const repostRef = doc(firestore, 'posts', postId, 'reposts', actor.userId); await runTransaction(firestore, async transaction => { const post = await transaction.get(postRef); const existing = await transaction.get(repostRef); if (!post.exists()) throw new Error('NOT_FOUND: post does not exist'); if (existing.exists()) return; transaction.set(repostRef, { actorId: actor.userId, postId, createdAt: serverTimestamp() }); transaction.update(postRef, { repostCount: Number(post.data().repostCount ?? 0) + 1 }) }) }
+  async share(actor: AuthenticatedIdentity, postId: string): Promise<void> { const post = await getDoc(doc(firestore, 'posts', postId)); if (!post.exists()) throw new Error('NOT_FOUND: post does not exist'); await addDoc(collection(firestore, 'postShares'), { actorId: actor.userId, postId, createdAt: serverTimestamp() }) }
+  subscribeActivity(actor: AuthenticatedIdentity, onChange: (events: ActivityEvent[]) => void, onError: (error: Error) => void): () => void { const activityQuery = query(collection(firestore, 'activities'), where('actorId', '==', actor.userId)); return onSnapshot(activityQuery, snapshot => onChange(snapshot.docs.map(item => { const data = item.data(); const timestamp = data.createdAt as { toMillis?: () => number } | undefined; return { id: item.id, type: String(data.type) as ActivityEvent['type'], actorId: String(data.actorId ?? ''), targetPostId: String(data.targetPostId ?? ''), createdAtMs: timestamp?.toMillis?.() ?? null } })), error => onError(error)) }
 }
