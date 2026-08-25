@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactElement } from 'react'
-import { FirebaseSocialRepository } from '../infrastructure/firebase/socialRepository'
+import { WorkDiskSocialRepository } from '../infrastructure/workdisk/socialRepository'
 import { FirebaseProfileRepository } from '../infrastructure/firebase/profileRepository'
 import type { AuthenticatedIdentity } from '../social/domain/identity'
 import type { ActivityEvent, Comment, Post, PostPrivacy, PostReaction } from '../social/domain/models'
@@ -8,7 +8,7 @@ import { REACTION_EMOJI, REACTION_OPTIONS } from '../social/domain/reactionCatal
 import { ProfilePage } from './ProfilePage'
 import './post-card.css'
 
-const repository = new FirebaseSocialRepository()
+const repository = new WorkDiskSocialRepository()
 const profiles = new FirebaseProfileRepository()
 type Page = 'home' | 'post' | 'video' | 'profile'
 
