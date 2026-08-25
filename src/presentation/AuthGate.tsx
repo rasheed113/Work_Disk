@@ -1,10 +1,12 @@
 import { useState, type FormEvent, type ReactElement } from 'react'
 import { login, loginWithGoogle, register, resetPassword } from '../infrastructure/firebase/auth'
 import { describeAuthError } from '../infrastructure/firebase/authError'
+import { authenticatedIdentity } from '../infrastructure/firebase/identityAdapter'
+import type { AuthenticatedIdentity } from '../social/domain/identity'
 
-type AuthGateProps = { onAuthenticated?: never }
+type AuthGateProps = { onAuthenticated?: (identity: AuthenticatedIdentity) => void }
 
-export function AuthGate(_props: AuthGateProps): ReactElement {
+export function AuthGate({ onAuthenticated }: AuthGateProps): ReactElement {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -46,9 +48,10 @@ export function AuthGate(_props: AuthGateProps): ReactElement {
     if (busy) return
     setBusy(true); setError('')
     try {
-      await loginWithGoogle()
-      // Firebase onAuthStateChanged is the single authoritative identity boundary.
-      // Do not construct or push a second identity from the popup credential here.
+      const credential = await loginWithGoogle()
+      const identity = authenticatedIdentity(credential.user)
+      if (!identity) throw new Error('Google authentication succeeded but no usable email was returned.')
+      onAuthenticated?.(identity)
     } catch (cause) { setError(describeAuthError(cause)) }
     finally { setBusy(false) }
   }
