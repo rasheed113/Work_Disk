@@ -17,7 +17,8 @@ export function PasswordResetPage(): ReactElement {
 
   useEffect(() => {
     if (mode !== 'resetPassword' || !oobCode) return
-    verifyPasswordResetCode(firebaseAuth, oobCode)
+    const resetCode = oobCode
+    verifyPasswordResetCode(firebaseAuth, resetCode)
       .then(accountEmail => { setEmail(accountEmail); setReady(true) })
       .catch(cause => setError(describeAuthError(cause)))
       .finally(() => setBusy(false))
@@ -32,7 +33,8 @@ export function PasswordResetPage(): ReactElement {
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return }
     if (password !== confirmPassword) { setError('Passwords do not match.'); return }
     setBusy(true); setError('')
-    try { await confirmPasswordReset(firebaseAuth, oobCode, password); setDone(true) }
+    const resetCode = oobCode
+    try { await confirmPasswordReset(firebaseAuth, resetCode, password); setDone(true) }
     catch (cause) { setError(describeAuthError(cause)) }
     finally { setBusy(false) }
   }
