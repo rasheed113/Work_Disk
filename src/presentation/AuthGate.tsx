@@ -48,7 +48,7 @@ export function AuthGate({ onAuthenticated }: AuthGateProps): ReactElement {
     setBusy(true); setError('')
     try {
       const credential = await loginWithGoogle()
-      const authenticatedEmail = credential.user.email
+      const authenticatedEmail = credential.user.email ?? credential.user.providerData.find(provider => provider.providerId === 'google.com')?.email ?? null
       if (!authenticatedEmail) throw new Error('Google account did not provide an email address.')
       onAuthenticated?.({ userId: credential.user.uid, email: authenticatedEmail })
     } catch (cause) { setError(describeAuthError(cause)) }
