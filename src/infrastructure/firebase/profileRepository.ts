@@ -3,17 +3,8 @@ import type { AuthenticatedIdentity } from '../../social/domain/identity'
 import type { Gender, SocialProfile } from '../../social/domain/profile'
 import { firestore } from './config'
 
-/**
- * Creates a stable WD ID by injectively encoding the Firebase Auth UID.
- * Firebase Auth UIDs are unique, and base64 encoding preserves uniqueness.
- * The result is stable across reloads and profile edits.
- */
 function generateWdId(userId: string): string {
-  const encoded = btoa(userId)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/g, '')
-
+  const encoded = btoa(userId).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
   return `WD-${encoded}`
 }
 
@@ -44,6 +35,7 @@ export class FirebaseProfileRepository {
     const snapshot = await getDoc(this.reference(identity))
     if (!snapshot.exists()) {
       const profile = profileFromData(identity, {})
+      await this.persistPublicProfile(profile)
       await setDoc(this.reference(identity), {
         ...profile,
         createdAt: serverTimestamp(),
@@ -51,7 +43,9 @@ export class FirebaseProfileRepository {
       }, { merge: true })
       return profile
     }
-    return profileFromData(identity, snapshot.data())
+    const profile = profileFromData(identity, snapshot.data())
+    await this.persistPublicProfile(profile)
+    return profile
   }
 
   async saveProfile(identity: AuthenticatedIdentity, profile: SocialProfile): Promise<SocialProfile> {
@@ -64,7 +58,17 @@ export class FirebaseProfileRepository {
       ...next,
       updatedAt: serverTimestamp(),
     }, { merge: true })
-
+    await this.persistPublicProfile(next)
     return next
+  }
+
+  private async persistPublicProfile(profile: SocialProfile): Promise<void> {
+    if (!profile.wdId || !profile.profileName.trim()) return
+    await setDoc(doc(firestore, 'publicProfiles', profile.userId), {
+      wdId: profile.wdId,
+      profileName: profile.profileName.trim(),
+      photoUrl: profile.photoUrl,
+      updatedAt: serverTimestamp(),
+    }, { merge: true })
   }
 }
