@@ -1,5 +1,9 @@
 import { initializeApp, type FirebaseOptions } from 'firebase/app'
-import { browserLocalPersistence, getAuth, setPersistence } from 'firebase/auth'
+import {
+  browserLocalPersistence,
+  browserPopupRedirectResolver,
+  initializeAuth,
+} from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const config: FirebaseOptions = {
@@ -16,6 +20,13 @@ for (const [name, value] of Object.entries(config)) {
 }
 
 const app = initializeApp(config)
-export const firebaseAuth = getAuth(app)
-export const firebaseAuthReady = setPersistence(firebaseAuth, browserLocalPersistence)
+
+// Explicitly initialise the browser auth dependencies used by Google popup auth.
+// This keeps persistence and the popup resolver under one Auth instance instead
+// of relying on getAuth()'s implicit browser setup.
+export const firebaseAuth = initializeAuth(app, {
+  persistence: browserLocalPersistence,
+  popupRedirectResolver: browserPopupRedirectResolver,
+})
+
 export const firestore = getFirestore(app)
