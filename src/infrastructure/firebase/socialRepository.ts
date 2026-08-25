@@ -4,14 +4,23 @@ import type { AuthenticatedIdentity } from '../../social/domain/identity'
 import type { SocialRepositoryPort } from '../../social/application/ports'
 import { validatePostContent } from '../../social/domain/validation'
 import { firestore } from './config'
+import { FirebaseProfileRepository } from './profileRepository'
 
-function postFromSnapshot(snapshot: { id: string; data: () => Record<string, unknown> }): Post {
+const profiles = new FirebaseProfileRepository()
+
+type Snapshot = { id: string; data: () => Record<string, unknown> }
+
+function postFromSnapshot(snapshot: Snapshot): Post {
   const data = snapshot.data()
   const timestamp = data.createdAt as { toMillis?: () => number } | undefined
   return {
     id: snapshot.id,
     authorId: String(data.authorId ?? ''),
-    authorEmail: String(data.authorEmail ?? ''),
+    author: {
+      wdId: String(data.authorWdId ?? ''),
+      profileName: String(data.authorProfileName ?? 'Work_Disk user'),
+      photoUrl: String(data.authorPhotoUrl ?? ''),
+    },
     content: String(data.content ?? ''),
     createdAtMs: timestamp?.toMillis?.() ?? null,
     likeCount: Number(data.likeCount ?? 0),
@@ -21,9 +30,12 @@ function postFromSnapshot(snapshot: { id: string; data: () => Record<string, unk
 export class FirebaseSocialRepository implements SocialRepositoryPort {
   async createPost(actor: AuthenticatedIdentity, content: string): Promise<Post> {
     const clean = validatePostContent(content)
+    const profile = await profiles.getProfile(actor)
     const reference = await addDoc(collection(firestore, 'posts'), {
       authorId: actor.userId,
-      authorEmail: actor.email,
+      authorWdId: profile.wdId,
+      authorProfileName: profile.profileName || profile.fullName || 'Work_Disk user',
+      authorPhotoUrl: profile.photoUrl,
       content: clean,
       audience: 'authenticated',
       likeCount: 0,
@@ -58,13 +70,11 @@ export class FirebaseSocialRepository implements SocialRepositoryPort {
     const postRef = doc(firestore, 'posts', postId)
     const likeRef = doc(firestore, 'posts', postId, 'likes', actor.userId)
     const activityRef = doc(firestore, 'activities', `${actor.userId}_${postId}_like`)
-
     await runTransaction(firestore, async transaction => {
       const post = await transaction.get(postRef)
       if (!post.exists()) throw new Error('NOT_FOUND: post does not exist')
       const like = await transaction.get(likeRef)
       if (like.exists()) return
-
       transaction.set(likeRef, { actorId: actor.userId, postId, createdAt: serverTimestamp() })
       transaction.update(postRef, { likeCount: Number(post.data().likeCount ?? 0) + 1 })
       transaction.set(activityRef, { type: 'like', actorId: actor.userId, targetPostId: postId, createdAt: serverTimestamp() })
