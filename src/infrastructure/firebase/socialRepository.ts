@@ -7,7 +7,6 @@ import { firestore } from './config'
 import { FirebaseProfileRepository } from './profileRepository'
 
 const profiles = new FirebaseProfileRepository()
-
 type Snapshot = { id: string; data: () => Record<string, unknown> }
 
 function postFromSnapshot(snapshot: Snapshot): Post {
@@ -31,11 +30,16 @@ export class FirebaseSocialRepository implements SocialRepositoryPort {
   async createPost(actor: AuthenticatedIdentity, content: string): Promise<Post> {
     const clean = validatePostContent(content)
     const profile = await profiles.getProfile(actor)
+    const profileName = profile.profileName.trim()
+    const profilePhoto = profile.photoUrl.trim()
+    if (!profileName) throw new Error('PROFILE_REQUIRED: profile name is required before creating a post')
+    if (!profilePhoto) throw new Error('PROFILE_REQUIRED: profile picture is required before creating a post')
+
     const reference = await addDoc(collection(firestore, 'posts'), {
       authorId: actor.userId,
       authorWdId: profile.wdId,
-      authorProfileName: profile.profileName.trim(),
-      authorPhotoUrl: profile.photoUrl,
+      authorProfileName: profileName,
+      authorPhotoUrl: profilePhoto,
       content: clean,
       audience: 'authenticated',
       likeCount: 0,
