@@ -26,17 +26,28 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /publicProfiles/{userId} {
+      allow read: if signedIn();
+      allow create, update: if own(userId)
+        && request.resource.data.wdId is string
+        && request.resource.data.profileName is string
+        && request.resource.data.photoUrl is string;
+      allow delete: if false;
+    }
+
     match /posts/{postId} {
       allow read: if signedIn();
-
       allow create: if signedIn()
         && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.authorWdId is string
+        && request.resource.data.authorProfileName is string
+        && request.resource.data.authorPhotoUrl is string
         && request.resource.data.likeCount == 0
         && request.resource.data.audience == 'authenticated';
-
       allow update: if signedIn()
         && resource.data.authorId == request.auth.uid
         && request.resource.data.authorId == resource.data.authorId
+        && request.resource.data.authorWdId == resource.data.authorWdId
         && (
           (
             request.resource.data.content == resource.data.content
@@ -44,11 +55,8 @@ service cloud.firestore {
             && request.resource.data.likeCount == resource.data.likeCount + 1
             && getAfter(/databases/$(database)/documents/posts/$(postId)/likes/$(request.auth.uid)).data.actorId == request.auth.uid
           )
-          || (
-            request.resource.data.likeCount == resource.data.likeCount
-          )
+          || request.resource.data.likeCount == resource.data.likeCount
         );
-
       allow delete: if signedIn() && resource.data.authorId == request.auth.uid;
 
       match /likes/{userId} {
@@ -63,16 +71,13 @@ service cloud.firestore {
 
       match /comments/{commentId} {
         allow read: if signedIn();
-        allow create: if signedIn()
-          && request.resource.data.authorId == request.auth.uid;
+        allow create: if signedIn() && request.resource.data.authorId == request.auth.uid;
         allow update: if signedIn()
           && resource.data.authorId == request.auth.uid
           && request.resource.data.authorId == resource.data.authorId;
         allow delete: if signedIn()
-          && (
-            resource.data.authorId == request.auth.uid
-            || get(/databases/$(database)/documents/posts/$(postId)).data.authorId == request.auth.uid
-          );
+          && (resource.data.authorId == request.auth.uid
+            || get(/databases/$(database)/documents/posts/$(postId)).data.authorId == request.auth.uid);
       }
     }
 
@@ -88,18 +93,15 @@ service cloud.firestore {
 
     match /videos/{videoId} {
       allow read: if signedIn();
-      allow create: if signedIn()
-        && request.resource.data.authorId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.authorId == request.auth.uid;
       allow update, delete: if signedIn()
         && resource.data.authorId == request.auth.uid
         && request.resource.data.authorId == resource.data.authorId;
     }
 
     match /media/{mediaId} {
-      allow create: if signedIn()
-        && request.resource.data.ownerId == request.auth.uid;
-      allow read: if signedIn()
-        && resource.data.ownerId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow read: if signedIn() && resource.data.ownerId == request.auth.uid;
       allow update, delete: if signedIn()
         && resource.data.ownerId == request.auth.uid
         && request.resource.data.ownerId == resource.data.ownerId;
@@ -109,7 +111,6 @@ service cloud.firestore {
       allow create: if participant(request.resource.data);
       allow read, update: if participant(resource.data);
       allow delete: if false;
-
       match /messages/{messageId} {
         allow read: if participant(get(/databases/$(database)/documents/conversations/$(conversationId)).data);
         allow create: if participant(get(/databases/$(database)/documents/conversations/$(conversationId)).data)
@@ -120,8 +121,7 @@ service cloud.firestore {
     }
 
     match /notifications/{notificationId} {
-      allow read, update, delete: if signedIn()
-        && resource.data.recipientId == request.auth.uid;
+      allow read, update, delete: if signedIn() && resource.data.recipientId == request.auth.uid;
       allow create: if false;
     }
 
@@ -134,23 +134,17 @@ service cloud.firestore {
     match /relationships/{relationshipId} {
       allow read: if signedIn();
       allow create: if signedIn()
-        && (
-          request.resource.data.followerId == request.auth.uid
-          || request.resource.data.followingId == request.auth.uid
-        );
+        && (request.resource.data.followerId == request.auth.uid
+          || request.resource.data.followingId == request.auth.uid);
       allow update, delete: if signedIn()
-        && (
-          resource.data.followerId == request.auth.uid
-          || resource.data.followingId == request.auth.uid
-        );
+        && (resource.data.followerId == request.auth.uid
+          || resource.data.followingId == request.auth.uid);
     }
 
     match /comments/{commentId} {
       allow read: if signedIn();
-      allow create: if signedIn()
-        && request.resource.data.authorId == request.auth.uid;
-      allow update, delete: if signedIn()
-        && resource.data.authorId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.authorId == request.auth.uid;
     }
 
     match /{document=**} {
