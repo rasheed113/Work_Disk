@@ -32,7 +32,9 @@ export class FirebaseProfileRepository {
     const saved = await apiRequest('PATCH', {
       profileName: profile.profileName,
       fullName: profile.fullName,
-      age: profile.age ?? '',
+      // Send age as a JSON string because the C++ API contract parses scalar profile fields as strings.
+      // The backend then validates the numeric range and stores it as INTEGER.
+      age: profile.age == null ? '' : String(profile.age),
       gender: profile.gender,
       mobile: profile.mobile,
       companyName: profile.companyName,
