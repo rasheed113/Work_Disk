@@ -7,24 +7,24 @@ export function PasswordResetPage(): ReactElement {
   const params = new URLSearchParams(window.location.search)
   const mode = params.get('mode')
   const oobCode = params.get('oobCode')
+  const resetCode = oobCode ?? ''
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [busy, setBusy] = useState(Boolean(oobCode))
+  const [busy, setBusy] = useState(Boolean(resetCode))
   const [ready, setReady] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (mode !== 'resetPassword' || !oobCode) return
-    const resetCode = oobCode
+    if (mode !== 'resetPassword' || !resetCode) return
     verifyPasswordResetCode(firebaseAuth, resetCode)
       .then(accountEmail => { setEmail(accountEmail); setReady(true) })
       .catch(cause => setError(describeAuthError(cause)))
       .finally(() => setBusy(false))
-  }, [mode, oobCode])
+  }, [mode, resetCode])
 
-  if (mode !== 'resetPassword' || !oobCode) {
+  if (mode !== 'resetPassword' || !resetCode) {
     return <main className="auth-shell"><section className="auth-card"><div className="brand-mark">WD</div><h1>Invalid password reset link</h1><p>This password reset link is missing or invalid. Request a new reset email from Work_Disk.</p><button type="button" onClick={() => { window.location.href = '/' }}>Back to sign in</button></section></main>
   }
 
@@ -33,7 +33,6 @@ export function PasswordResetPage(): ReactElement {
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return }
     if (password !== confirmPassword) { setError('Passwords do not match.'); return }
     setBusy(true); setError('')
-    const resetCode = oobCode
     try { await confirmPasswordReset(firebaseAuth, resetCode, password); setDone(true) }
     catch (cause) { setError(describeAuthError(cause)) }
     finally { setBusy(false) }
