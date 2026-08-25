@@ -1,6 +1,7 @@
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -26,6 +27,12 @@ export async function register(email: string, password: string): Promise<void> {
 export async function login(email: string, password: string): Promise<void> {
   const input = credentials(email, password)
   await signInWithEmailAndPassword(firebaseAuth, input.email, input.password)
+}
+
+export async function resetPassword(email: string): Promise<void> {
+  const normalisedEmail = normaliseEmail(email)
+  if (!normalisedEmail) throw new Error('Please enter your email address.')
+  await sendPasswordResetEmail(firebaseAuth, normalisedEmail)
 }
 
 // Keep the proven Google popup flow unchanged.
