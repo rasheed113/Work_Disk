@@ -5,6 +5,7 @@ import type { AuthenticatedIdentity } from '../social/domain/identity'
 import type { ActivityEvent, Post } from '../social/domain/models'
 import type { SocialProfile } from '../social/domain/profile'
 import { ProfilePage } from './ProfilePage'
+import './post-card.css'
 
 const repository = new FirebaseSocialRepository()
 const profiles = new FirebaseProfileRepository()
