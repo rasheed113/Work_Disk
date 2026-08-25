@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  type UserCredential,
 } from 'firebase/auth'
 import { firebaseAuth } from './config'
 
@@ -39,11 +40,13 @@ export async function resetPassword(email: string): Promise<void> {
   await sendPasswordResetEmail(firebaseAuth, normalisedEmail, actionCodeSettings)
 }
 
-// Keep the proven Google popup flow unchanged.
-export function loginWithGoogle(): Promise<void> {
+// Return the real Firebase credential so the presentation boundary can
+// immediately commit the authenticated identity instead of waiting for a
+// second asynchronous auth-state round trip.
+export async function loginWithGoogle(): Promise<UserCredential> {
   const provider = new GoogleAuthProvider()
   provider.setCustomParameters({ prompt: 'select_account' })
-  return signInWithPopup(firebaseAuth, provider).then(() => undefined)
+  return signInWithPopup(firebaseAuth, provider)
 }
 
 export async function logout(): Promise<void> {
