@@ -3,9 +3,9 @@ import type { IdentityPort } from '../../social/application/ports'
 import type { AuthenticatedIdentity } from '../../social/domain/identity'
 import { firebaseAuth } from './config'
 
-function authenticatedIdentity(user: User | null): AuthenticatedIdentity | null {
+export function authenticatedIdentity(user: User | null): AuthenticatedIdentity | null {
   if (!user) return null
-  const email = user.email ?? user.providerData.find(provider => provider.providerId === 'google.com')?.email ?? user.providerData.find(provider => Boolean(provider.email))?.email
+  const email = user.email ?? user.providerData.find(provider => Boolean(provider.email))?.email
   return email ? { userId: user.uid, email } : null
 }
 
