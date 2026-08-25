@@ -1,70 +1,54 @@
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
 import type { AuthenticatedIdentity } from '../../social/domain/identity'
-import type { Gender, SocialProfile } from '../../social/domain/profile'
-import { firestore } from './config'
+import type { SocialProfile } from '../../social/domain/profile'
+import { firebaseAuth } from './config'
+import { LegacyFirebaseProfileRepository } from './legacyProfileRepository'
 
-/**
- * Creates a stable WD ID by injectively encoding the Firebase Auth UID.
- * Firebase Auth UIDs are unique, and base64 encoding preserves uniqueness.
- * The result is stable across reloads and profile edits.
- */
-function generateWdId(userId: string): string {
-  const encoded = btoa(userId)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/g, '')
+const apiBase = (import.meta.env.VITE_WORK_DISK_API_URL as string | undefined)?.replace(/\/$/, '') || 'http://localhost:8787'
+const legacy = new LegacyFirebaseProfileRepository()
 
-  return `WD-${encoded}`
+async function idToken(): Promise<string> {
+  const user = firebaseAuth.currentUser
+  if (!user) throw new Error('A signed-in Work_Disk account is required.')
+  return user.getIdToken()
 }
 
-function profileFromData(identity: AuthenticatedIdentity, data: Record<string, unknown>): SocialProfile {
-  const age = Number(data.age ?? 0)
-  return {
-    userId: identity.userId,
-    email: identity.email,
-    wdId: String(data.wdId ?? generateWdId(identity.userId)),
-    profileName: String(data.profileName ?? ''),
-    fullName: String(data.fullName ?? ''),
-    age: age > 0 ? age : null,
-    gender: String(data.gender ?? '') as Gender,
-    mobile: String(data.mobile ?? ''),
-    companyName: String(data.companyName ?? ''),
-    photoUrl: String(data.photoUrl ?? ''),
-    coverUrl: String(data.coverUrl ?? ''),
-    updatedAtMs: null,
-  }
+async function apiRequest(method: 'GET' | 'PATCH', body?: Record<string, unknown>): Promise<SocialProfile> {
+  const token = await idToken()
+  const response = await fetch(`${apiBase}/api/v1/profile`, {
+    method,
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  const data = await response.json().catch(() => null) as { payload?: SocialProfile; error?: { message?: string } } | null
+  if (!response.ok || !data?.payload) throw new Error(data?.error?.message || `Work_Disk Profile API failed (${response.status}).`)
+  return data.payload
+}
+
+function needsMigration(profile: SocialProfile): boolean {
+  return !profile.profileName && !profile.fullName && !profile.photoUrl && !profile.coverUrl && !profile.mobile && !profile.companyName && profile.age === null && !profile.gender
 }
 
 export class FirebaseProfileRepository {
-  private reference(identity: AuthenticatedIdentity) {
-    return doc(firestore, 'profiles', identity.userId)
-  }
-
   async getProfile(identity: AuthenticatedIdentity): Promise<SocialProfile> {
-    const snapshot = await getDoc(this.reference(identity))
-    if (!snapshot.exists()) {
-      const profile = profileFromData(identity, {})
-      await setDoc(this.reference(identity), {
-        ...profile,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      }, { merge: true })
-      return profile
-    }
-    return profileFromData(identity, snapshot.data())
+    const current = await apiRequest('GET')
+    if (!needsMigration(current)) return current
+
+    const old = await legacy.getProfile(identity)
+    const migrated = await this.saveProfile(identity, old)
+    return migrated
   }
 
   async saveProfile(identity: AuthenticatedIdentity, profile: SocialProfile): Promise<SocialProfile> {
-    const existing = await getDoc(this.reference(identity))
-    const existingWdId = existing.exists() ? String(existing.data().wdId ?? '') : ''
-    const wdId = existingWdId || profile.wdId || generateWdId(identity.userId)
-    const next = { ...profile, userId: identity.userId, email: identity.email, wdId }
-
-    await setDoc(this.reference(identity), {
-      ...next,
-      updatedAt: serverTimestamp(),
-    }, { merge: true })
-
-    return next
+    const saved = await apiRequest('PATCH', {
+      profileName: profile.profileName,
+      fullName: profile.fullName,
+      age: profile.age ?? '',
+      gender: profile.gender,
+      mobile: profile.mobile,
+      companyName: profile.companyName,
+      photoUrl: profile.photoUrl,
+      coverUrl: profile.coverUrl,
+    })
+    return { ...saved, userId: identity.userId, email: identity.email }
   }
 }
