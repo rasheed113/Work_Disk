@@ -1,10 +1,11 @@
-import { useEffect, useState, type FormEvent, type ReactElement } from 'react'
+import { lazy, Suspense, useEffect, useState, type FormEvent, type ReactElement } from 'react'
 import { WorkDiskSocialRepository } from '../infrastructure/workdisk/socialRepository'
 import { FirebaseProfileRepository } from '../infrastructure/firebase/profileRepository'
 import type { AuthenticatedIdentity } from '../social/domain/identity'
 import type { ActivityEvent, Comment, Post, PostPrivacy, PostReaction } from '../social/domain/models'
 import type { SocialProfile } from '../social/domain/profile'
 import { REACTION_EMOJI, REACTION_OPTIONS } from '../social/domain/reactionCatalog'
+import { PostComposer } from './PostComposer'
 import { ProfilePage } from './ProfilePage'
 import './post-card.css'
 
@@ -19,10 +20,12 @@ export function SocialApp({ identity, onDashboard }: { identity: AuthenticatedId
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const stopFeed = repository.subscribeHomeFeed(identity, setPosts, error => setError(error.message))
+    const stopFeed = page === 'home'
+      ? repository.subscribeHomeFeed(identity, setPosts, error => setError(error.message))
+      : () => undefined
     const stopActivity = repository.subscribeActivity(identity, setActivity, error => setError(error.message))
     return () => { stopFeed(); stopActivity() }
-  }, [identity])
+  }, [identity, page])
 
   return <div className="social-shell">
     <header className="social-header">
@@ -70,5 +73,3 @@ function CommentsPanel({ actor, post, onError }: { actor: AuthenticatedIdentity;
 function CommentItem({ comment, actor, postId, onReply, onError }: { comment: Comment; actor: AuthenticatedIdentity; postId: string; onReply: () => void; onError: (message: string) => void }): ReactElement { const [reactionOpen, setReactionOpen] = useState(false); const [editing, setEditing] = useState(false); const [text, setText] = useState(comment.content); const own = comment.authorId === actor.userId; const count = Object.values(comment.reactionCounts).reduce((a, b) => a + b, 0); async function react(value: PostReaction) { try { await repository.setCommentReaction(actor, postId, comment.id, comment.userReaction === value ? null : value) } catch (cause) { onError(cause instanceof Error ? cause.message : 'Comment reaction failed') } setReactionOpen(false) } async function save() { try { await repository.updateComment(actor, postId, comment.id, text, extractMentions(text)); setEditing(false) } catch (cause) { onError(cause instanceof Error ? cause.message : 'Comment edit failed') } } async function remove() { if (!window.confirm('Delete this comment?')) return; try { await repository.deleteComment(actor, postId, comment.id) } catch (cause) { onError(cause instanceof Error ? cause.message : 'Comment delete failed') } } return <div className={`comment-item ${comment.parentCommentId ? 'reply' : ''}`}><div className="post-avatar comment-avatar">{comment.author.photoUrl ? <img src={comment.author.photoUrl} alt={comment.author.profileName} /> : <span>{comment.author.profileName.slice(0, 1).toUpperCase()}</span>}</div><div className="comment-body"><strong>{comment.author.profileName}</strong>{editing ? <textarea value={text} onChange={event => setText(event.target.value)} /> : <p>{renderMentions(comment.content)}</p>}<small>{comment.createdAtMs ? new Date(comment.createdAtMs).toLocaleString() : ''}{comment.editedAtMs ? ' · edited' : ''}</small><div className="comment-actions"><div className="reaction-action"><button aria-haspopup="menu" aria-expanded={reactionOpen} onClick={() => setReactionOpen(value => !value)}>{comment.userReaction ? REACTION_EMOJI[comment.userReaction] : '☺'} {count || ''}</button>{reactionOpen && <ReactionPicker active={comment.userReaction} onSelect={react} />}</div><button onClick={onReply}>Reply</button>{own && !editing && <><button onClick={() => setEditing(true)}>Edit</button><button onClick={remove}>Delete</button></>}{editing && <><button onClick={save}>Save</button><button onClick={() => setEditing(false)}>Cancel</button></>}</div></div></div> }
 function extractMentions(value: string): string[] { return [...value.matchAll(/@([A-Za-z0-9._-]+)/g)].map(match => match[1]).filter(Boolean) }
 function renderMentions(value: string): ReactElement { return <>{value.split(/(@[A-Za-z0-9._-]+)/g).map((part, index) => part.startsWith('@') ? <strong key={index} className="mention">{part}</strong> : part)}</> }
-
-function PostComposer({ identity, onCreated }: { identity: AuthenticatedIdentity; onCreated: () => void }): ReactElement { const [content, setContent] = useState(''); const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const [profile, setProfile] = useState<SocialProfile | null>(null); const [privacy, setPrivacy] = useState<PostPrivacy>('public'); useEffect(() => { void profiles.getProfile(identity).then(setProfile).catch(cause => setError(cause instanceof Error ? cause.message : 'Profile failed')) }, [identity]); async function publish(event: FormEvent) { event.preventDefault(); if (!content.trim()) return; setBusy(true); setError(''); try { await repository.createPost(identity, content, privacy, [], extractMentions(content)); setContent(''); onCreated() } catch (cause) { setError(cause instanceof Error ? cause.message : 'Post failed') } finally { setBusy(false) } } return <section className="composer-card"><span className="eyebrow">CREATE REAL POST</span><h1>Share something</h1>{profile && <div className="post-composer-identity"><div className="post-avatar">{profile.photoUrl ? <img src={profile.photoUrl} alt={profile.profileName} /> : <span>{profile.profileName.slice(0, 1).toUpperCase()}</span>}</div><strong>{profile.profileName}</strong></div>}<form onSubmit={publish}><textarea value={content} onChange={event => setContent(event.target.value)} maxLength={5000} required placeholder="Write your post… Use @name to mention someone." /><select value={privacy} onChange={event => setPrivacy(event.target.value as PostPrivacy)}><option value="public">Public</option><option value="friends_followers">Friends &amp; Followers</option><option value="selected_friends">Selected Friends</option><option value="only_me">Only Me</option></select>{error && <div className="error">{error}</div>}<button disabled={busy}>{busy ? 'Publishing…' : 'Publish'}</button></form></section> }
