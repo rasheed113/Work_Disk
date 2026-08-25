@@ -5,13 +5,15 @@ import { emptyReactionCounts, normalizeReactionCounts } from '../../social/domai
 import { validatePostContent } from '../../social/domain/validation'
 import { firebaseAuth } from '../firebase/config'
 
-const apiBase = (import.meta.env.VITE_WORK_DISK_API_URL as string | undefined)?.replace(/\/$/, '') || 'http://localhost:8787'
+const apiBase = (import.meta.env.VITE_WORK_DISK_API_URL as string | undefined)?.replace(/\/$/, '')
 
 type ApiError = { error?: { code?: string; message?: string } }
 
 async function request<T>(method: string, path: string, body?: Record<string, unknown>): Promise<T> {
   const user = firebaseAuth.currentUser
   if (!user) throw new Error('A signed-in Work_Disk account is required.')
+  if (!apiBase) throw new Error('Work_Disk Social API URL is not configured for this deployment.')
+
   const token = await user.getIdToken()
   const response = await fetch(`${apiBase}${path}`, {
     method,
@@ -44,7 +46,7 @@ function postFromApi(value: Record<string, unknown>): Post {
   }
 }
 
-function emptyComment(postId: string): Comment[] {
+function emptyComment(_postId: string): Comment[] {
   return []
 }
 
@@ -63,17 +65,35 @@ export class WorkDiskSocialRepository implements SocialRepositoryPort {
 
   subscribeHomeFeed(actor: AuthenticatedIdentity, onChange: (posts: Post[]) => void, onError: (error: Error) => void): () => void {
     let stopped = false
+    let timer: number | null = null
+    let delay = 5000
+
+    const schedule = () => {
+      if (stopped) return
+      timer = window.setTimeout(() => void load(), delay)
+    }
+
     const load = async () => {
       try {
         const data = await request<Record<string, unknown>[]>('GET', '/api/v1/social/feed')
-        if (!stopped) onChange(data.map(postFromApi))
+        if (stopped) return
+        onChange(data.map(postFromApi))
+        delay = 5000
+        schedule()
       } catch (cause) {
-        if (!stopped) onError(cause instanceof Error ? cause : new Error('Failed to load Work_Disk social feed.'))
+        if (stopped) return
+        onError(cause instanceof Error ? cause : new Error('Failed to load Work_Disk social feed.'))
+        // Do not hammer a missing production API every few seconds.
+        delay = Math.min(delay * 2, 60000)
+        schedule()
       }
     }
+
     void load()
-    const timer = window.setInterval(() => void load(), 5000)
-    return () => { stopped = true; window.clearInterval(timer) }
+    return () => {
+      stopped = true
+      if (timer !== null) window.clearTimeout(timer)
+    }
   }
 
   async updatePost(_actor: AuthenticatedIdentity, postId: string, content: string): Promise<void> {
