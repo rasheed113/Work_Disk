@@ -40,11 +40,9 @@ export async function resetPassword(email: string): Promise<void> {
   await sendPasswordResetEmail(firebaseAuth, normalisedEmail, actionCodeSettings)
 }
 
-// Return the real Firebase credential so the presentation boundary can
-// immediately commit the authenticated identity instead of waiting for a
-// second asynchronous auth-state round trip.
 export async function loginWithGoogle(): Promise<UserCredential> {
   const provider = new GoogleAuthProvider()
+  provider.addScope('email')
   provider.setCustomParameters({ prompt: 'select_account' })
   return signInWithPopup(firebaseAuth, provider)
 }
