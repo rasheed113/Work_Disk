@@ -1,13 +1,13 @@
-import { useEffect, useState, type FormEvent, type ReactElement } from 'react'
+import { lazy, Suspense, useEffect, useState, type FormEvent, type ReactElement } from 'react'
 import { WorkDiskSocialRepository } from '../infrastructure/workdisk/socialRepository'
 import { FirebaseProfileRepository } from '../infrastructure/firebase/profileRepository'
 import type { AuthenticatedIdentity } from '../social/domain/identity'
 import type { ActivityEvent, Comment, Post, PostPrivacy, PostReaction } from '../social/domain/models'
 import type { SocialProfile } from '../social/domain/profile'
 import { REACTION_EMOJI, REACTION_OPTIONS } from '../social/domain/reactionCatalog'
-import { ProfilePage } from './ProfilePage'
 import './post-card.css'
 
+const ProfilePage = lazy(() => import('./ProfilePage').then(module => ({ default: module.ProfilePage })))
 const repository = new WorkDiskSocialRepository()
 const profiles = new FirebaseProfileRepository()
 type Page = 'home' | 'post' | 'video' | 'profile'
@@ -38,7 +38,7 @@ export function SocialApp({ identity, onDashboard }: { identity: AuthenticatedId
       {page === 'home' && <section className="feed-page"><div className="page-heading"><div><span className="eyebrow">REAL-TIME SOCIAL FEED</span><h1>Home</h1></div></div>{posts.length === 0 ? <div className="empty-state"><strong>No posts yet</strong><span>Your Home is empty because no persisted posts are available.</span></div> : posts.map(post => <PostCard key={post.id} post={post} actor={identity} onError={setError} />)}</section>}
       {page === 'post' && <PostComposer identity={identity} onCreated={() => setPage('home')} />}
       {page === 'video' && <section className="empty-state"><strong>Video</strong><span>Video creation is the next Social vertical slice.</span></section>}
-      {page === 'profile' && <ProfilePage identity={identity} />}
+      {page === 'profile' && <Suspense fallback={<section className="empty-state"><strong>Profile</strong><span>Loading profile…</span></section>}><ProfilePage identity={identity} /></Suspense>}
     </main>
     <nav className="bottom-nav"><button className={page === 'home' ? 'active' : ''} onClick={() => setPage('home')}>🏠<span>Home</span></button><button className={page === 'post' ? 'active' : ''} onClick={() => setPage('post')}>➕<span>Post</span></button><button className={page === 'video' ? 'active' : ''} onClick={() => setPage('video')}>🎬<span>Video</span></button><button className={page === 'profile' ? 'active' : ''} onClick={() => setPage('profile')}>🧑‍💼<span>Profile</span></button></nav>
   </div>

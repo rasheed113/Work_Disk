@@ -44,7 +44,7 @@ function postFromApi(value: Record<string, unknown>): Post {
   }
 }
 
-function emptyComment(postId: string): Comment[] {
+function emptyComment(_postId: string): Comment[] {
   return []
 }
 
@@ -63,17 +63,38 @@ export class WorkDiskSocialRepository implements SocialRepositoryPort {
 
   subscribeHomeFeed(actor: AuthenticatedIdentity, onChange: (posts: Post[]) => void, onError: (error: Error) => void): () => void {
     let stopped = false
+    let inFlight = false
+
     const load = async () => {
+      if (stopped || inFlight || document.visibilityState !== 'visible') return
+      inFlight = true
       try {
         const data = await request<Record<string, unknown>[]>('GET', '/api/v1/social/feed')
         if (!stopped) onChange(data.map(postFromApi))
       } catch (cause) {
         if (!stopped) onError(cause instanceof Error ? cause : new Error('Failed to load Work_Disk social feed.'))
+      } finally {
+        inFlight = false
       }
     }
-    void load()
-    const timer = window.setInterval(() => void load(), 5000)
-    return () => { stopped = true; window.clearInterval(timer) }
+
+    const refresh = () => void load()
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+
+    // Let the first paint happen before starting the feed request. The feed is
+    // below the page heading, so it should not compete with the initial render.
+    const initialLoad = window.setTimeout(refresh, 0)
+    const timer = window.setInterval(refresh, 5000)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      stopped = true
+      window.clearTimeout(initialLoad)
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
   }
 
   async updatePost(_actor: AuthenticatedIdentity, postId: string, content: string): Promise<void> {
