@@ -8,6 +8,8 @@ export function AuthGate(): ReactElement {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [resetOpen, setResetOpen] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
   const [resetSent, setResetSent] = useState(false)
 
   async function submit(event: FormEvent) {
@@ -15,7 +17,6 @@ export function AuthGate(): ReactElement {
     if (busy) return
     setBusy(true)
     setError('')
-    setResetSent(false)
     try {
       if (mode === 'login') await login(email, password)
       else await register(email, password)
@@ -26,13 +27,27 @@ export function AuthGate(): ReactElement {
     }
   }
 
-  async function forgotPassword() {
+  function openPasswordReset() {
+    if (busy) return
+    setError('')
+    setResetSent(false)
+    setResetEmail(email)
+    setResetOpen(true)
+  }
+
+  function closePasswordReset() {
+    if (busy) return
+    setResetOpen(false)
+    setResetSent(false)
+  }
+
+  async function sendResetEmail() {
     if (busy) return
     setBusy(true)
     setError('')
     setResetSent(false)
     try {
-      await resetPassword(email)
+      await resetPassword(resetEmail)
       setResetSent(true)
     } catch (cause) {
       setError(describeAuthError(cause))
@@ -45,7 +60,6 @@ export function AuthGate(): ReactElement {
     if (busy) return
     setBusy(true)
     setError('')
-    setResetSent(false)
     try {
       await loginWithGoogle()
     } catch (cause) {
@@ -55,5 +69,5 @@ export function AuthGate(): ReactElement {
     }
   }
 
-  return <main className="auth-shell"><section className="auth-card"><div className="brand-mark">WD</div><h1>Work_Disk Social</h1><p>Sign in with a real account to enter the Social Web.</p><button type="button" className="google-button" onClick={continueWithGoogle} disabled={busy}>Continue with Google</button><div className="auth-divider" aria-hidden="true"><span>or</span></div><form onSubmit={submit}><label>Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" /></label><label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} /></label>{error && <div className="error" role="alert">{error}</div>}{resetSent && <div className="success" role="status">Password reset email sent. Check your inbox.</div>}<button disabled={busy}>{busy ? 'Working…' : mode === 'login' ? 'Sign in' : 'Create account'}</button></form>{mode === 'login' && <button type="button" className="link-button" disabled={busy} onClick={forgotPassword}>Forgot password?</button>}<button type="button" className="link-button" disabled={busy} onClick={() => { setError(''); setResetSent(false); setMode(mode === 'login' ? 'register' : 'login') }}>{mode === 'login' ? 'Create a new account' : 'I already have an account'}</button></section></main>
+  return <main className="auth-shell"><section className="auth-card"><div className="brand-mark">WD</div><h1>Work_Disk Social</h1><p>Sign in with a real account to enter the Social Web.</p><button type="button" className="google-button" onClick={continueWithGoogle} disabled={busy}>Continue with Google</button><div className="auth-divider" aria-hidden="true"><span>or</span></div><form onSubmit={submit}><label>Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" /></label><label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} /></label>{error && <div className="error" role="alert">{error}</div>}<button disabled={busy}>{busy ? 'Working…' : mode === 'login' ? 'Sign in' : 'Create account'}</button></form>{mode === 'login' && <button type="button" className="link-button" disabled={busy} onClick={openPasswordReset}>Forgot password?</button>}<button type="button" className="link-button" disabled={busy} onClick={() => { setError(''); setMode(mode === 'login' ? 'register' : 'login') }}>{mode === 'login' ? 'Create a new account' : 'I already have an account'}</button></section>{resetOpen && <div className="auth-modal-backdrop" role="presentation"><section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="password-reset-title"><h2 id="password-reset-title">Reset your password</h2>{resetSent ? <><p>Password reset email sent successfully. Check your inbox.</p><button type="button" onClick={closePasswordReset}>Close</button></> : <><label>Email<input type="email" value={resetEmail} onChange={e => setResetEmail(e.target.value)} autoComplete="email" autoFocus /></label>{error && <div className="error" role="alert">{error}</div>}<button type="button" disabled={busy} onClick={sendResetEmail}>{busy ? 'Sending…' : 'Send reset email'}</button><button type="button" className="link-button" disabled={busy} onClick={closePasswordReset}>Cancel</button></>}</section></div>}</main>
 }
