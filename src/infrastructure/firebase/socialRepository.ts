@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, runTransaction, serverTimestamp, where } from 'firebase/firestore'
+import { addDoc, collection, doc, getDoc, onSnapshot, orderBy, query, runTransaction, serverTimestamp, where } from 'firebase/firestore'
 import type { ActivityEvent, Comment, Post, PostPrivacy, PostReaction } from '../../social/domain/models'
 import type { AuthenticatedIdentity } from '../../social/domain/identity'
 import type { SocialRepositoryPort } from '../../social/application/ports'
