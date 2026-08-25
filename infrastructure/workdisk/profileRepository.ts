@@ -1,10 +1,10 @@
 import { firebaseAuth } from '../firebase/config'
-import { FirebaseProfileRepository } from '../firebase/profileRepository'
+import { LegacyFirebaseProfileRepository } from '../firebase/legacyProfileRepository'
 import type { AuthenticatedIdentity } from '../../social/domain/identity'
 import type { SocialProfile } from '../../social/domain/profile'
 
 const apiBase = (import.meta.env.VITE_WORK_DISK_API_URL as string | undefined)?.replace(/\/$/, '') || 'http://localhost:8787'
-const legacyRepository = new FirebaseProfileRepository()
+const legacyRepository = new LegacyFirebaseProfileRepository()
 
 class WorkDiskApiUnavailableError extends Error {
   constructor(cause: unknown) {
@@ -44,9 +44,9 @@ export class WorkDiskProfileRepository {
     } catch (cause) {
       if (!(cause instanceof WorkDiskApiUnavailableError)) throw cause
 
-      // The API is the authoritative production store. When the API is temporarily
-      // unreachable, keep the profile page usable by reading the existing Firebase
-      // migration store. We deliberately do not write to the legacy store here.
+      // The Work_Disk API is the authoritative production store. When it is
+      // temporarily unreachable, keep the profile page readable from the
+      // existing Firebase migration store. We deliberately do not write to it.
       return await legacyRepository.getProfile(identity)
     }
   }
