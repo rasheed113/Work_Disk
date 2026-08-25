@@ -3,31 +3,18 @@ import type { AuthenticatedIdentity } from '../../social/domain/identity'
 import type { Gender, SocialProfile } from '../../social/domain/profile'
 import { firestore } from './config'
 
-const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-
 /**
- * Creates a stable, user-specific WD ID from the Firebase Auth UID.
- *
- * Unlike random client-side generation, the same authenticated UID always
- * produces the same WD ID, so a user cannot accidentally receive a second
- * WD ID after a reload or profile re-creation. Firebase Auth UIDs are unique,
- * therefore the encoding is unique for every authenticated user.
+ * Creates a stable WD ID by injectively encoding the Firebase Auth UID.
+ * Firebase Auth UIDs are unique, and base64 encoding preserves uniqueness.
+ * The result is stable across reloads and profile edits.
  */
 function generateWdId(userId: string): string {
-  let hash = 2166136261
-  for (let index = 0; index < userId.length; index += 1) {
-    hash ^= userId.charCodeAt(index)
-    hash = Math.imul(hash, 16777619)
-  }
+  const encoded = btoa(userId)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '')
 
-  let value = hash >>> 0
-  let code = ''
-  for (let index = 0; index < 8; index += 1) {
-    code += alphabet[value % alphabet.length]
-    value = Math.floor(value / alphabet.length)
-  }
-
-  return `WD-${code}`
+  return `WD-${encoded}`
 }
 
 function profileFromData(identity: AuthenticatedIdentity, data: Record<string, unknown>): SocialProfile {
