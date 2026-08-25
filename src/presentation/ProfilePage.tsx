@@ -8,10 +8,29 @@ import './profile.css'
 const repository = new FirebaseProfileRepository()
 type MediaTarget = 'profile' | 'cover'
 
+async function imageDataUrl(file: File, target: MediaTarget): Promise<string> {
+  const source = URL.createObjectURL(file)
+  try {
+    const image = new Image()
+    image.src = source
+    await new Promise<void>((resolve, reject) => { image.onload = () => resolve(); image.onerror = () => reject(new Error('The selected image could not be read.')) })
+    const max = target === 'profile' ? 800 : 1400
+    const scale = Math.min(1, max / Math.max(image.naturalWidth, image.naturalHeight))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('Image editor is unavailable in this browser.')
+    context.drawImage(image, 0, 0, canvas.width, canvas.height)
+    return canvas.toDataURL('image/jpeg', 0.84)
+  } finally { URL.revokeObjectURL(source) }
+}
+
 export function ProfilePage({ identity }: { identity: AuthenticatedIdentity }): ReactElement {
   const [profile, setProfile] = useState<SocialProfile | null>(null)
   const [busy, setBusy] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [mediaSaving, setMediaSaving] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
   const [editingMedia, setEditingMedia] = useState(false)
@@ -30,9 +49,30 @@ export function ProfilePage({ identity }: { identity: AuthenticatedIdentity }): 
   const completion = useMemo(() => profile ? profileCompletion(profile) : 0, [profile])
   function change(field: keyof SocialProfile, value: string) { setSaved(false); setProfile(current => current ? { ...current, [field]: field === 'age' ? (value ? Number(value) : null) : value } : current) }
   function choose(target: MediaTarget, camera: boolean) { setMediaTarget(target); if (camera) cameraRef.current?.click(); else galleryRef.current?.click() }
-  function selectMedia(event: ChangeEvent<HTMLInputElement>) { const file = event.target.files?.[0]; event.target.value = ''; if (!file) return; if (!file.type.startsWith('image/')) { setError('Please select an image file.'); return } if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(URL.createObjectURL(file)) }
-  function applyPreview() { if (!profile || !previewUrl) return; setSaved(false); setProfile({ ...profile, [mediaTarget === 'profile' ? 'photoUrl' : 'coverUrl']: previewUrl }); URL.revokeObjectURL(previewUrl); setPreviewUrl('') }
-  function closeMediaEditor() { if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(''); setEditingMedia(false) }
+  async function selectMedia(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    if (!file.type.startsWith('image/')) { setError('Please select an image file.'); return }
+    setError('')
+    try {
+      const dataUrl = await imageDataUrl(file, mediaTarget)
+      setPreviewUrl(dataUrl)
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Image could not be prepared.') }
+  }
+  async function applyPreview() {
+    if (!profile || !previewUrl) return
+    setMediaSaving(true); setError(''); setSaved(false)
+    try {
+      const next = { ...profile, [mediaTarget === 'profile' ? 'photoUrl' : 'coverUrl']: previewUrl }
+      const persisted = await repository.saveProfile(identity, next)
+      setProfile(persisted)
+      setPreviewUrl('')
+      setEditingMedia(false)
+      setSaved(true)
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Photo could not be saved.') } finally { setMediaSaving(false) }
+  }
+  function closeMediaEditor() { setPreviewUrl(''); setEditingMedia(false) }
   async function save(event: FormEvent) { event.preventDefault(); if (!profile) return; setSaving(true); setError(''); setSaved(false); try { setProfile(await repository.saveProfile(identity, profile)); setSaved(true) } catch (cause) { setError(cause instanceof Error ? cause.message : 'Profile could not be saved') } finally { setSaving(false) } }
 
   if (busy) return <section className="profile-page"><div className="profile-panel profile-loading">Loading your real profile…</div></section>
@@ -42,12 +82,11 @@ export function ProfilePage({ identity }: { identity: AuthenticatedIdentity }): 
     <input ref={galleryRef} className="media-input" type="file" accept="image/*" onChange={selectMedia} />
     <input ref={cameraRef} className="media-input" type="file" accept="image/*" capture="environment" onChange={selectMedia} />
     <div className="profile-hero" style={profile.coverUrl ? { backgroundImage: `linear-gradient(180deg,rgba(4,12,8,.08),rgba(4,12,8,.92)),url(${profile.coverUrl})` } : undefined}>
-      {editingMedia && <div className="media-edit-menu"><button type="button" onClick={() => choose('cover', false)}>🖼️ Gallery</button><button type="button" onClick={() => choose('cover', true)}>📷 Camera</button></div>}
       <button type="button" className="media-edit-button cover-edit-button" onClick={() => { setMediaTarget('cover'); setEditingMedia(value => !value) }} aria-label="Edit cover photo">✎</button>
       <div className="profile-hero-content"><div className="profile-avatar-wrap"><button type="button" className="profile-avatar profile-avatar-button" onClick={() => { setMediaTarget('profile'); setEditingMedia(value => !value) }} aria-label="Edit profile photo">{profile.photoUrl ? <img src={profile.photoUrl} alt="Profile" /> : profile.fullName.slice(0, 1).toUpperCase() || identity.email.slice(0, 1).toUpperCase()}</button><button type="button" className="avatar-edit-button" onClick={() => { setMediaTarget('profile'); setEditingMedia(value => !value) }} aria-label="Edit profile photo">✎</button></div><div><span className="eyebrow">SOCIAL PROFILE</span><h1>{profile.profileName || 'Complete your profile'}</h1><p>{profile.fullName || identity.email}</p></div></div>
     </div>
     {editingMedia && <div className="profile-media-target-menu"><span>Editing {mediaTarget === 'profile' ? 'profile photo' : 'cover photo'}</span><button type="button" onClick={() => choose(mediaTarget, false)}>🖼️ Gallery</button><button type="button" onClick={() => choose(mediaTarget, true)}>📷 Camera</button><button type="button" onClick={closeMediaEditor}>Close</button></div>}
-    {previewUrl && <div className="media-editor-backdrop" role="dialog" aria-modal="true"><div className={`media-editor ${mediaTarget === 'cover' ? 'cover-editor' : ''}`}><span className="eyebrow">ADJUST {mediaTarget === 'profile' ? 'PROFILE PHOTO' : 'COVER PHOTO'}</span><h2>Preview & adjust</h2><div className="media-preview"><img src={previewUrl} alt="Selected preview" /></div><div className="media-editor-actions"><button type="button" onClick={closeMediaEditor}>Cancel</button><button type="button" onClick={() => choose(mediaTarget, false)}>Choose another</button><button type="button" className="profile-save" onClick={applyPreview}>Use photo</button></div></div></div>}
+    {previewUrl && <div className="media-editor-backdrop" role="dialog" aria-modal="true"><div className={`media-editor ${mediaTarget === 'cover' ? 'cover-editor' : ''}`}><span className="eyebrow">ADJUST {mediaTarget === 'profile' ? 'PROFILE PHOTO' : 'COVER PHOTO'}</span><h2>Preview & adjust</h2><div className="media-preview"><img src={previewUrl} alt="Selected preview" /></div><div className="media-editor-actions"><button type="button" onClick={closeMediaEditor}>Cancel</button><button type="button" onClick={() => choose(mediaTarget, false)} disabled={mediaSaving}>Choose another</button><button type="button" className="profile-save" onClick={() => void applyPreview()} disabled={mediaSaving}>{mediaSaving ? 'Saving…' : 'Use photo'}</button></div></div></div>}
     <div className="profile-completion profile-panel"><div><span className="eyebrow">PROFILE COMPLETION</span><strong>{completion}%</strong></div><div className="completion-track"><span style={{ width: `${completion}%` }} /></div><p>{completion === 100 ? 'Your required profile information is complete.' : 'Complete the highlighted profile details to finish your Social profile.'}</p></div>
     <form className="profile-panel profile-form" onSubmit={save}><div className="profile-section-heading"><span className="eyebrow">EDIT PROFILE</span><h2>Profile details</h2></div><div className="profile-grid"><label>Profile name<input value={profile.profileName} onChange={event => change('profileName', event.target.value)} placeholder="Your public profile name" /></label><label>Full name<input value={profile.fullName} onChange={event => change('fullName', event.target.value)} placeholder="Your full name" /></label><label>Age<input type="number" min="1" max="120" value={profile.age ?? ''} onChange={event => change('age', event.target.value)} placeholder="Age" /></label><label>Gender<select value={profile.gender} onChange={event => change('gender', event.target.value as Gender)}><option value="">Select gender</option><option value="female">Female</option><option value="male">Male</option><option value="non-binary">Non-binary</option><option value="prefer-not-to-say">Prefer not to say</option></select></label><label>Mobile / contact number<input value={profile.mobile} onChange={event => change('mobile', event.target.value)} placeholder="Contact number" /></label><label>Company name <span>(optional)</span><input value={profile.companyName} onChange={event => change('companyName', event.target.value)} placeholder="Company name" /></label></div><div className="profile-system-card"><div><span className="eyebrow">WORK_DISK ID</span><strong>{profile.wdId}</strong><small>System-generated and immutable. Copy it for Social search or sending.</small></div><button type="button" className="profile-copy" onClick={() => void navigator.clipboard?.writeText(profile.wdId)}>Copy ID</button></div><label className="profile-email">Authenticated email<input value={identity.email} readOnly /></label>{error && <div className="error">{error}</div>}{saved && <div className="profile-saved">Profile saved successfully.</div>}<button className="profile-save" disabled={saving}>{saving ? 'Saving…' : 'Save profile'}</button></form>
   </section>
