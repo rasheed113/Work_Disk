@@ -22,5 +22,5 @@ export function App(): ReactElement {
   if (!authResolved) return <div className="loading">Checking your secure session…</div>
   return identity
     ? <SocialApp identity={identity} onDashboard={() => window.location.assign('/dashboard')} />
-    : <AuthGate onAuthenticated={setIdentity} />
+    : <AuthGate />
 }
