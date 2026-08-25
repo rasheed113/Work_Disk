@@ -1,7 +1,13 @@
+export type PublicAuthor = {
+  wdId: string
+  profileName: string
+  photoUrl: string
+}
+
 export type Post = {
   id: string
   authorId: string
-  authorEmail: string
+  author: PublicAuthor
   content: string
   createdAtMs: number | null
   likeCount: number
