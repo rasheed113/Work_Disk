@@ -41,19 +41,28 @@ jobs:
           WORK_DISK_API_URL: ${{ secrets.VITE_WORK_DISK_API_URL }}
         run: |
           set -euo pipefail
-          if [ -z "${WORK_DISK_API_URL:-}" ]; then
-            echo 'VITE_WORK_DISK_API_URL is required for production Social/Profile API access.'
-            echo 'Refusing to deploy a build that would fall back to localhost.'
+          expected='https://work-disk-account-api.onrender.com'
+          value="$(printf '%s' "${WORK_DISK_API_URL:-}" | tr -d '\r\n')"
+          value="${value%/}"
+          if [ "$value" != "$expected" ]; then
+            echo "VITE_WORK_DISK_API_URL must be exactly: $expected"
+            echo 'Refusing to deploy a build with an incorrect or placeholder API hostname.'
             exit 1
           fi
-          case "$WORK_DISK_API_URL" in
-            https://*) ;;
-            *)
-              echo 'VITE_WORK_DISK_API_URL must use HTTPS in production.'
-              exit 1
-              ;;
-          esac
-          echo 'Work_Disk API URL is configured for production.'
+          echo 'Work_Disk API URL matches the production Account API hostname.'
+      - name: Verify production Account API is reachable
+        shell: bash
+        env:
+          WORK_DISK_API_URL: ${{ secrets.VITE_WORK_DISK_API_URL }}
+        run: |
+          set -euo pipefail
+          url="${WORK_DISK_API_URL%/}/health"
+          echo "Checking $url"
+          body="$(curl --fail --silent --show-error --location --max-time 20 "$url")"
+          printf '%s\n' "$body"
+          printf '%s' "$body" | grep -q '"status":"ok"'
+          printf '%s' "$body" | grep -q 'work-disk-account-social-api'
+          echo 'Production Account API health check passed.'
       - name: Build Work_Disk web
         run: npm run build
         env:
