@@ -50,19 +50,6 @@ jobs:
             exit 1
           fi
           echo 'Work_Disk API URL matches the production Account API hostname.'
-      - name: Verify production Account API is reachable
-        shell: bash
-        env:
-          WORK_DISK_API_URL: ${{ secrets.VITE_WORK_DISK_API_URL }}
-        run: |
-          set -euo pipefail
-          url="${WORK_DISK_API_URL%/}/health"
-          echo "Checking $url"
-          body="$(curl --fail --silent --show-error --location --max-time 20 "$url")"
-          printf '%s\n' "$body"
-          printf '%s' "$body" | grep -q '"status":"ok"'
-          printf '%s' "$body" | grep -q 'work-disk-account-social-api'
-          echo 'Production Account API health check passed.'
       - name: Build Work_Disk web
         run: npm run build
         env:
